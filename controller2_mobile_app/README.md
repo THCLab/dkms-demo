@@ -8,13 +8,13 @@ Scan the QR code below to visit a downable `apk` file:
 
 And install the app on your Android device. Make sure to give it the permission to use camera (it is necessary to scan QR codes inside). Also, make sure you have a screen lock* set up.
 
-* *A `screen lock`is to ensure your phone's security, you can set up a phone lock to use a password, PIN, or Pattern. That way, even if someone gets their hands on your phone, they won't be able to access it. From Settings, swipe to and tap Lock screen. Then, tap Screen lock type and select your desired type of lock.*
+* *A `screen lock`is to ensure your phone's security, you can set it up as a password, PIN, or Pattern. That way, even if someone gets their hands on your phone, they won't be able to access it. From Settings, swipe to and tap Lock screen. Then, tap Screen lock type and select your desired type of lock.*
 
 ## Flow of the install
 
 *Mind you, the description has been made using an Android Phone Samsung Galaxy A50, Android version 11.*
 
-1. The android device might warm you that there's a security risk when saving an `apk` fille on your device. Ignore this, our apk file is safe.
+1. The android device might warn you that there's a security risk when saving an `apk` file from unverivied source on your device. Ignore this, our `apk` file is safe.
 2. Look for the recently saved fie in your download directory and tap it to install.
 3. You'll get the message (paraphrasing!)
 
@@ -32,35 +32,23 @@ Platforms DKMS-DEMO has been tested on:
 * Android 10 ✔️
 * Android 9 ✔️
 
-
-
 ## Compiling
 
-### Finding the right Android studio
+### Finding the right Android Studio version
 
-<img src="../images/android-studio-app.jpeg" alt="android-studio-app-logo" border="1" width="250"> 
-
-1. Get the *Google Play* store and type Android Studio. 
-2. Compare the logo.
-3. Install and open the app.
+For installing Android Studio, visit [the official IDE website](https://developer.android.com/android-studio/download) and download the latest version. Then click on the downloaded file (for example .exe on Windows) and follow the on screen instructions for installation.
 
 ### How to find, install and configure the right version of Flutter
-{TBW, which ones will it be??! Provide links to the Google Play Library??!}
+To install Flutter on your device, please follow the [official tutorial](https://docs.flutter.dev/get-started/install?gclid=CjwKCAjwwo-WBhAMEiwAV4dybVFx2We9iyyzFqm0U0ox1NpsXLkVvVOCUsKO9PyTfiIoZcpaf7z7vBoC_GIQAvD_BwE&gclsrc=aw.ds) provided by Google, as it is the most explicit one. It also contains a description of installing Android Studio and configuring a mobile device to work along. The Dart SDK is provided with Flutter SDK.
 
-<img src="../images/flutter-dart-guessing-game1.jpeg" alt="" border="1" width="250"> 
-<img src="../images/flutter-dart-guessing-game2.jpeg" alt="" border="1" width="250"> 
-<img src="../images/flutter-dart-guessing-game3.jpeg" alt="" border="1" width="250">
-<img src="../images/flutter-dart-guessing-game4.jpeg" alt="" border="1" width="250">
-  
-HvC: I stopped here on July 1th 2022, so below still has to be tested and to be made more **verbose**.
-
-1. Make sure you have installed Android Studio on your device and configured Flutter and Dart
-2. Open the `controller2_mobile_app` directory in Android Studio
-3. Run `flutter pub get`
-4. Run the `main.dart` file in `controller2_mobile_app/lib/`
+### Running the `.dart` file in Android Studio
+1. Open the `controller2_mobile_app` directory in Android Studio using `File -> Open` menu.
+2. Wait for the files to stop indexing and run `flutter pub get` in Android Studio terminal to get all dependencies. 
+3. In the `project` tab on the left side of the screen find `controller2_mobile_app/lib/` folder and open the `main.dart` file
+4. Run the `main` function by clicking the two green arrows on the left side of the function name.
 
 ## Building apk
 
-1. Open the `controller2_mobile_app` directory in Android Studio
+1. Open the `controller2_mobile_app` directory in Android Studio using `File -> Open` menu.
 2. Run in Android Studio terminal `flutter build apk --split-per-abi`
 3. Find the suitable file for your device in `build/app/outputs/flutter-apk`. For most cases it will be `app-arm64-v8a-release`.
