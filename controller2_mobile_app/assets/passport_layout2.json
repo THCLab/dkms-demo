@@ -1,0 +1,1286 @@
+{
+  "elements" : [
+    {
+      "label": "container1",
+      "args": {
+        "width": "${scaleSize(735)}",
+        "height": "${scaleSize(525.13)}",
+        "decoration" : {
+          "image" : {
+            "fit" : "cover",
+            "image" : {
+              "type" : "asset",
+              "assetName" : "assets/background-front.png"
+            },
+            "width" : "${scaleSize(735)}",
+            "height" : "${scaleSize(525.13)}"
+          }
+        }
+      },
+      "children":[]
+    },
+    {
+      "label" : "row1",
+      "children": [
+        {
+          "type": "container",
+          "args": {
+            "height" : "${scaleSize(24)}"
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row3",
+      "children": [
+      ]
+    },
+    {
+      "label" : "row6",
+      "children": [
+        {
+          "type": "text",
+          "args": {
+            "text": "SWISS CONFEDERATION",
+            "style": {
+              "letterSpacing" : "${scaleSize(0.15)}",
+              "fontSize": "${scaleSize(17.25)}",
+              "color": "#233067",
+              "fontFamily" : "Nanum Gothic",
+              "fontWeight" : "bold"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row8",
+      "children": [
+
+        {
+          "type": "text",
+          "args": {
+            "text": "Type",
+            "style": {
+              "color": "#233067",
+              "fontSize": "${scaleSize(9.75)}",
+              "fontFamily" : "Nanum Gothic"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row9",
+      "children": [
+        {
+          "type": "text",
+          "args": {
+            "text": "${toUpperCase(documentType)}",
+            "style": {
+              "color": "#222222",
+              "fontSize": "${scaleSize(15.75)}",
+              "fontFamily" : "Euphemia"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row10",
+      "children": [
+
+        {
+          "type": "text",
+          "args": {
+            "text": "Code",
+            "style": {
+              "color": "#233067",
+              "fontSize": "${scaleSize(9.75)}",
+              "fontFamily" : "Nanum Gothic"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row11",
+      "children": [
+        {
+          "type": "text",
+          "args": {
+            "text": "${toUpperCase(issuingStateCode)}",
+            "style": {
+              "color": "#222222",
+              "fontSize": "${scaleSize(17.25)}",
+              "fontFamily" : "Euphemia"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row12",
+      "children": [
+        {
+          "type": "text",
+          "args": {
+            "text": "Passport Number",
+            "style": {
+              "color": "#233067",
+              "fontSize": "${scaleSize(9.75)}",
+              "fontFamily" : "Nanum Gothic",
+              "letterSpacing" : "${scaleSize(0.225)}"
+            }
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "height" : "${scaleSize(25)}"
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row13",
+      "children": [
+        {
+          "type": "text",
+          "args": {
+            "text": "${toUpperCase(documentNumber)}",
+            "style": {
+              "color": "#222222",
+              "fontSize": "${scaleSize(15.75)}",
+              "fontFamily" : "Euphemia"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row15",
+      "children": [
+        {
+          "type": "text",
+          "args": {
+            "text": "1",
+            "style": {
+              "color": "#233067",
+              "fontSize": "${scaleSize(9.75)}",
+              "fontFamily" : "Nanum Gothic"
+            }
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "width" : "${scaleSize(3.75)}"
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "Surname",
+            "style": {
+              "color": "#233067",
+              "fontSize": "${scaleSize(9.75)}",
+              "fontFamily" : "Nanum Gothic"
+            }
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "height" : "${scaleSize(20)}"
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row16",
+      "children": [
+        {
+          "type": "text",
+          "args": {
+            "text": "${primaryIdentifier}",
+            "style": {
+              "color": "#222222",
+              "fontSize": "${scaleSize(14.25)}",
+              "fontFamily" : "Euphemia"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row18",
+      "children": [
+        {
+          "type": "text",
+          "args": {
+            "text": "2",
+            "style": {
+              "color": "#233067",
+              "fontSize": "${scaleSize(9.75)}",
+              "fontFamily" : "Nanum Gothic"
+            }
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "width" : "${scaleSize(3.75)}"
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "Given name(s)",
+            "style": {
+              "color": "#233067",
+              "fontSize": "${scaleSize(9.75)}",
+              "fontFamily" : "Nanum Gothic"
+            }
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "height" : "${scaleSize(20)}"
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row19",
+      "children": [
+        {
+          "type": "text",
+          "args": {
+            "text": "${secondaryIdentifier}",
+            "style": {
+              "color": "#222222",
+              "fontSize": "${scaleSize(14.25)}",
+              "fontFamily" : "Euphemia"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row21",
+      "children": [
+        {
+          "type": "text",
+          "args": {
+            "text": "3",
+            "style": {
+              "color": "#233067",
+              "fontSize": "${scaleSize(9.75)}",
+              "fontFamily" : "Nanum Gothic",
+              "letterSpacing" : "${scaleSize(0.188)}"
+            }
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "width" : "${scaleSize(3.75)}"
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "Nationality",
+            "style": {
+              "color": "#233067",
+              "fontSize": "${scaleSize(9.75)}",
+              "fontFamily" : "Nanum Gothic",
+              "letterSpacing" : "${scaleSize(0.05)}"
+            }
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "height" : "${scaleSize(20)}"
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row22",
+      "children": [
+        {
+          "type": "text",
+          "args": {
+            "text": "${nationality}",
+            "style": {
+              "color": "#222222",
+              "fontSize": "${scaleSize(14.25)}",
+              "fontFamily" : "Euphemia"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row24",
+      "children": [
+        {
+          "type": "text",
+          "args": {
+            "text": "4",
+            "style": {
+              "color": "#233067",
+              "fontSize": "${scaleSize(7.5)}",
+              "letterSpacing": "${scaleSize(0.488)}",
+              "fontFamily" : "Nanum Gothic"
+            }
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "width" : "${scaleSize(3.75)}"
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "Date of birth",
+            "style": {
+              "color": "#233067",
+              "fontSize": "${scaleSize(7.88)}",
+              "fontFamily" : "Nanum Gothic",
+              "letterSpacing": "${scaleSize(0.15)}"
+            }
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "height" : "${scaleSize(15)}"
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row25",
+      "children": [
+        {
+          "type": "text",
+          "args": {
+            "text": "${dateOfBirth}",
+            "style": {
+              "color": "#222222",
+              "fontSize": "${scaleSize(14.25)}",
+              "fontFamily" : "Euphemia"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row26",
+      "children": [
+        {
+          "type" : "sized_box",
+          "args": {
+            "width" : "${scaleSize(26.26)}"
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "5",
+            "style": {
+              "color": "#233067",
+              "fontSize": "${scaleSize(7.5)}",
+              "letterSpacing": "${scaleSize(0.488)}",
+              "fontFamily" : "Nanum Gothic"
+            }
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "width" : "${scaleSize(3.75)}"
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "Sex",
+            "style": {
+              "color": "#233067",
+              "fontSize": "${scaleSize(7.88)}",
+              "fontFamily" : "Nanum Gothic",
+              "letterSpacing": "${scaleSize(0.15)}"
+            }
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "height" : "${scaleSize(15)}"
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row27",
+      "children" : [
+        {
+          "type" : "sized_box",
+          "args": {
+            "width" : "${scaleSize(26.26)}"
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "${sex}",
+            "style": {
+              "color": "#222222",
+              "fontSize": "${scaleSize(14.25)}",
+              "fontFamily" : "Euphemia"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row28",
+      "children": [
+        {
+          "type": "text",
+          "args": {
+            "text": "6",
+            "style": {
+              "color": "#233067",
+              "fontSize": "${scaleSize(7.5)}",
+              "letterSpacing": "${scaleSize(0.488)}",
+              "fontFamily" : "Nanum Gothic"
+            }
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "width" : "${scaleSize(3.75)}"
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "Height",
+            "style": {
+              "color": "#233067",
+              "fontSize": "${scaleSize(7.88)}",
+              "fontFamily" : "Nanum Gothic",
+              "letterSpacing": "${scaleSize(0.15)}"
+            }
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "height" : "${scaleSize(15)}"
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row29",
+      "children": [
+        {
+          "type": "text",
+          "args": {
+            "text": "${optionalPersonalData}",
+            "style": {
+              "color": "#222222",
+              "fontSize": "${scaleSize(15.75)}",
+              "fontFamily" : "Euphemia"
+            }
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "width" : "${scaleSize(7.5)}",
+            "height" : "${scaleSize(1.5)}"
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "cm",
+            "style": {
+              "color": "#222222",
+              "fontSize": "${scaleSize(14.25)}",
+              "letterSpacing": "${scaleSize(0.488)}",
+              "fontFamily" : "Euphemia"
+            }
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "width" : "${scaleSize(1.5)}"
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row31",
+      "children": [
+        {
+          "type": "text",
+          "args": {
+            "text": "7",
+            "style": {
+              "color": "#233067",
+              "fontSize": "${scaleSize(7.5)}",
+              "letterSpacing": "${scaleSize(0.488)}",
+              "fontFamily" : "Nanum Gothic"
+            }
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "width" : "${scaleSize(3.75)}"
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "Place of origin",
+            "style": {
+              "color": "#233067",
+              "fontSize": "${scaleSize(7.88)}",
+              "fontFamily" : "Nanum Gothic",
+              "letterSpacing": "${scaleSize(0.15)}"
+            }
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "height" : "${scaleSize(20)}"
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row32",
+      "children": [
+        {
+          "type": "text",
+          "args": {
+            "text": "${placeOfBirth}",
+            "style": {
+              "color": "#222222",
+              "fontSize": "${scaleSize(14.25)}",
+              "fontFamily" : "Euphemia",
+              "letterSpacing": "${scaleSize(0.488)}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row34",
+      "children": [
+        {
+          "type" : "sized_box",
+          "args": {
+            "height" : "${scaleSize(1.5)}"
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "8",
+            "style": {
+              "color": "#233067",
+              "fontSize": "${scaleSize(7.5)}",
+              "letterSpacing": "${scaleSize(0.488)}",
+              "fontFamily" : "Nanum Gothic"
+            }
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "width" : "${scaleSize(3.75)}",
+            "height": "${scaleSize(1.5)}"
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "Date of issue",
+            "style": {
+              "color": "#233067",
+              "fontSize": "${scaleSize(7.88)}",
+              "fontFamily" : "Nanum Gothic",
+              "letterSpacing": "${scaleSize(0.15)}"
+            }
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "height" : "${scaleSize(20)}"
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row35",
+      "children": [
+        {
+          "type" : "sized_box",
+          "args": {
+            "height" : "${scaleSize(1.5)}"
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "${dateOfIssue}",
+            "style": {
+              "color": "#222222",
+              "fontSize": "${scaleSize(14.25)}",
+              "fontFamily" : "Euphemia",
+              "letterSpacing": "${scaleSize(0.488)}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row36",
+      "children": [
+        {
+          "type" : "sized_box",
+          "args": {
+            "width" : "${scaleSize(26.26)}"
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "height" : "${scaleSize(1.5)}"
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "9",
+            "style": {
+              "color": "#233067",
+              "fontSize": "${scaleSize(7.5)}",
+              "letterSpacing": "${scaleSize(0.488)}",
+              "fontFamily" : "Nanum Gothic"
+            }
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "width" : "${scaleSize(3.75)}"
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "height" : "${scaleSize(1.5)}"
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "Authority or issuing organization",
+            "style": {
+              "color": "#233067",
+              "fontSize": "${scaleSize(7.88)}",
+              "fontFamily" : "Nanum Gothic",
+              "letterSpacing": "${scaleSize(0.15)}"
+            }
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "height" : "${scaleSize(20)}"
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row37",
+      "children": [
+        {
+          "type" : "sized_box",
+          "args": {
+            "width" : "${scaleSize(26.26)}"
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "height" : "${scaleSize(1.5)}"
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "${issuedBy}",
+            "style": {
+              "color": "#222222",
+              "fontSize": "${scaleSize(14.25)}",
+              "fontFamily" : "Euphemia",
+              "letterSpacing": "${scaleSize(0.488)}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row39",
+      "children": [
+        {
+          "type": "text",
+          "args": {
+            "text": "10",
+            "style": {
+              "color": "#233067",
+              "fontSize": "${scaleSize(7.5)}",
+              "letterSpacing": "${scaleSize(0.488)}",
+              "fontFamily" : "Nanum Gothic"
+            }
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "width" : "${scaleSize(3.75)}"
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "Date of expiry",
+            "style": {
+              "color": "#233067",
+              "fontSize": "${scaleSize(7.88)}",
+              "fontFamily" : "Nanum Gothic",
+              "letterSpacing": "${scaleSize(0.15)}"
+            }
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args": {
+            "height" : "${scaleSize(20)}"
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row40",
+      "children": [
+        {
+          "type": "text",
+          "args": {
+            "text": "${dateOfExpiry}",
+            "style": {
+              "color": "#222222",
+              "fontSize": "${scaleSize(14.25)}",
+              "fontFamily" : "Euphemia",
+              "letterSpacing": "${scaleSize(0.488)}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row41",
+      "children" : [
+        {
+          "type" : "sized_box",
+          "args" : {
+            "height" : "${scaleSize(71.268)}"
+          }
+        }
+      ]
+    },
+    {
+      "label" : "column0",
+      "args" : {
+        "mainAxisSize" : "max"
+      }
+    },
+    {
+      "label" : "column1",
+      "args" : {
+        "mainAxisSize" : "max"
+      }
+    },
+    {
+      "label" : "column2",
+      "args" : {
+        "crossAxisAlignment" : "end"
+      }
+    },
+    {
+      "label": "column3",
+      "args" : {
+        "crossAxisAlignment" : "end",
+        "mainAxisAlignment" : "start"
+      },
+      "children" : [
+        {
+          "type": "text",
+          "args": {
+            "text": "Passport",
+            "style": {
+              "color": "#233067",
+              "fontSize": "${scaleSize(17.25)}",
+              "fontFamily" : "Nanum Gothic",
+              "letterSpacing": "${scaleSize(0.68)}",
+              "fontWeight" : "bold"
+            }
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args" : {
+            "width" : "${scaleSize(142.5)}",
+            "height" : "${scaleSize(90.5)}"
+          }
+        }
+      ]
+    },
+    {
+      "label" : "column4",
+      "children" : [
+
+      ]
+    },
+    {
+      "label" : "column5",
+      "children" : [
+        {
+          "type" : "sized_box",
+          "args": {
+            "height" : "${scaleSize(15)}"
+          }
+        }
+      ]
+    },
+    {
+      "label": "column6",
+      "children" : [
+        {
+          "type" : "sized_box",
+          "args" : {
+            "width" : "${scaleSize(3)}",
+            "height" : "${scaleSize(15)}"
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args" : {
+            "width" : "${scaleSize(152.29)}",
+            "height" : "${scaleSize(210.8)}"
+          },
+          "children" : [
+            {
+              "type" : "asset_image",
+              "args" : {
+                "name" : "assets/photo.png"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "column8",
+      "args" : {
+        "crossAxisAlignment" : "start",
+        "mainAxisAlignment" : "start",
+        "mainAxisSize" : "max"
+      },
+      "children" : []
+    },
+    {
+      "label": "column9",
+      "args" : {
+        "crossAxisAlignment" : "start"
+      },
+      "children" : []
+    },
+    {
+      "label": "column10",
+      "args" : {
+        "crossAxisAlignment" : "start"
+      },
+      "children" : []
+    },
+    {
+      "label": "column11",
+      "args" : {
+        "crossAxisAlignment" : "start"
+      },
+      "children" : []
+    },
+    {
+      "label": "column12",
+      "args" : {
+        "crossAxisAlignment" : "start"
+      },
+      "children" : []
+    },
+    {
+      "label": "column13",
+      "args" : {
+        "crossAxisAlignment" : "start"
+      },
+      "children" : []
+    },
+    {
+      "label": "column14",
+      "args" : {
+        "crossAxisAlignment" : "start"
+      },
+      "children" : []
+    },
+    {
+      "label": "column15",
+      "args" : {
+        "crossAxisAlignment" : "start"
+      },
+      "children" : []
+    },
+    {
+      "label": "column16",
+      "args" : {
+        "crossAxisAlignment" : "start"
+      },
+      "children" : []
+    },
+    {
+      "label": "column17",
+      "args" : {
+        "crossAxisAlignment" : "start"
+      },
+      "children" : []
+    },
+    {
+      "label": "column18",
+      "args" : {
+        "crossAxisAlignment" : "start"
+      },
+      "children" : []
+    },
+    {
+      "label": "column19",
+      "args" : {
+        "crossAxisAlignment" : "start"
+      },
+      "children" : []
+    },
+    {
+      "label": "column20",
+      "args" : {
+        "crossAxisAlignment" : "start"
+      },
+      "children" : []
+    },
+    {
+      "label": "column21",
+      "args" : {
+        "crossAxisAlignment" : "start"
+      },
+      "children" : []
+    },
+    {
+      "label": "column22",
+      "args" : {
+        "crossAxisAlignment" : "start"
+      },
+      "children" : []
+    },
+    {
+      "label" : "row45",
+      "children": [
+        {
+          "type" : "sized_box",
+          "args" : {
+            "width" : "${scaleSize(45)}"
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "P<",
+            "style": {
+              "fontSize": "${scaleSize(23.26)}",
+              "letterSpacing": "${scaleSize(1.38)}",
+              "fontFamily" : "OCRB 10 Pitch BT"
+            }
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "${toUpperCase(issuingStateCode)}",
+            "style": {
+              "fontSize": "${scaleSize(23.26)}",
+              "letterSpacing": "${scaleSize(1.38)}",
+              "fontFamily" : "OCRB 10 Pitch BT"
+            }
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "${toUpperCase(secondaryIdentifier)}",
+            "style": {
+              "fontSize": "${scaleSize(23.26)}",
+              "letterSpacing": "${scaleSize(1.38)}",
+              "fontFamily" : "OCRB 10 Pitch BT"
+            }
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "<<",
+            "style": {
+              "fontSize": "${scaleSize(23.26)}",
+              "letterSpacing": "${scaleSize(1.38)}",
+              "fontFamily" : "OCRB 10 Pitch BT"
+            }
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "${toUpperCase(primaryIdentifier)}",
+            "style": {
+              "fontSize": "${scaleSize(23.26)}",
+              "letterSpacing": "${scaleSize(1.38)}",
+              "fontFamily" : "OCRB 10 Pitch BT"
+            }
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "<<<<<<<<<<<<<<<<<<<<<<<<",
+            "style": {
+              "fontSize": "${scaleSize(23.26)}",
+              "letterSpacing": "${scaleSize(1.38)}",
+              "fontFamily" : "OCRB 10 Pitch BT"
+            }
+          }
+        },
+        {
+          "type" : "sized_box",
+          "args" : {
+            "height" : "${scaleSize(7.5)}"
+          }
+        }
+      ]
+    },
+    {
+      "label" : "row44",
+      "children": [
+        {
+          "type" : "sized_box",
+          "args" : {
+            "width" : "${scaleSize(45)}"
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "${toUpperCase(documentNumber)}",
+            "style": {
+              "fontSize": "${scaleSize(22.5)}",
+              "letterSpacing": "${scaleSize(1.33)}",
+              "fontFamily" : "OCRB 10 Pitch BT"
+            }
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "<0",
+            "style": {
+              "fontSize": "${scaleSize(22.5)}",
+              "letterSpacing": "${scaleSize(1.33)}",
+              "fontFamily" : "OCRB 10 Pitch BT"
+            }
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "${toUpperCase(issuingStateCode)}",
+            "style": {
+              "fontSize": "${scaleSize(22.5)}",
+              "letterSpacing": "${scaleSize(1.33)}",
+              "fontFamily" : "OCRB 10 Pitch BT"
+            }
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "0000000",
+            "style": {
+              "fontSize": "${scaleSize(22.5)}",
+              "letterSpacing": "${scaleSize(1.33)}",
+              "fontFamily" : "OCRB 10 Pitch BT"
+            }
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "${toUpperCase(sex)}",
+            "style": {
+              "fontSize": "${scaleSize(22.5)}",
+              "letterSpacing": "${scaleSize(1.33)}",
+              "fontFamily" : "OCRB 10 Pitch BT"
+            }
+          }
+        },
+        {
+          "type": "text",
+          "args": {
+            "text": "0000000<<<<<<<<<<<<<<<0",
+            "style": {
+              "fontSize": "${scaleSize(22.5)}",
+              "letterSpacing": "${scaleSize(1.33)}",
+              "fontFamily" : "OCRB 10 Pitch BT"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "label": "expanded1",
+      "args" : {
+        "flex" : 4
+      },
+      "children" : []
+    },
+    {
+      "label": "expanded2",
+      "args": {
+        "flex": 8
+      },
+      "children": []
+    },
+    {
+      "label": "expanded3",
+      "args": {
+        "flex": 8
+      },
+      "children": []
+    },
+    {
+      "label": "expanded4",
+      "args": {
+        "flex": 4
+      },
+      "children": []
+    },
+    {
+      "label": "expanded5",
+      "args": {
+        "flex": 3
+      },
+      "children": []
+    },
+    {
+      "label": "expanded6",
+      "args": {
+        "flex": 7
+      },
+      "children": []
+    },
+    {
+      "label": "expanded7",
+      "args": {
+        "flex": 2
+      },
+      "children": []
+    },
+    {
+      "label": "expanded9",
+      "args": {
+        "flex": 3
+      },
+      "children": []
+    },
+    {
+      "label": "expanded10",
+      "args": {
+        "flex": 3
+      },
+      "children": []
+    },
+    {
+      "label": "expanded11",
+      "args": {
+        "flex": 6
+      },
+      "children": []
+    },
+    {
+      "label": "expanded15",
+      "args": {
+        "flex": 5
+      },
+      "children": []
+    },
+    {
+      "label": "expanded16",
+      "args": {
+        "flex": 3
+      },
+      "children": []
+    },
+    {
+      "label": "expanded17",
+      "args": {
+        "flex": 4
+      },
+      "children": []
+    },
+    {
+      "label": "expanded19",
+      "args": {
+        "flex": 5
+      },
+      "children": []
+    },
+    {
+      "label": "expanded20",
+      "args": {
+        "flex": 7
+      },
+      "children": []
+    }
+  ]
+}
