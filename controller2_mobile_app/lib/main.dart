@@ -4,31 +4,21 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:convert';
 
+import 'package:asymmetric_crypto_primitives/asymmetric_crypto_primitives.dart';
+import 'package:asymmetric_crypto_primitives/ed25519_signer.dart';
 import 'package:dkms_demo/scanner.dart';
-import 'package:ed25519_signing_plugin/ed25519_signer.dart';
-import 'package:ed25519_signing_plugin/thclab_signing_plugin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:keri/bridge_generated.dart';
+import 'package:keri/keri.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:vector_math/vector_math.dart';
 
-import 'bridge_generated.dart';
 
-// Simple Flutter code. If you are not familiar with Flutter, this may sounds a bit long. But indeed
-// it is quite trivial and Flutter is just like that. Please refer to Flutter's tutorial to learn Flutter.
-
-const base = 'dartkeriox';
-final path = Platform.isWindows ? '$base.dll' : 'lib$base.so';
-late final dylib = Platform.isIOS
-    ? DynamicLibrary.process()
-    : Platform.isMacOS
-    ? DynamicLibrary.executable()
-    : DynamicLibrary.open(path);
-late final api = KeriDartImpl(dylib);
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
-  var signer = await THCLabSigningPlugin.establishForEd25519();
+  var signer = await AsymmetricCryptoPrimitives.establishForEd25519();
   runApp(MaterialApp(home: MyApp(signer: signer,),debugShowCheckedModeBanner: false,));
 }
 
@@ -64,12 +54,21 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     signer = widget.signer;
+    initParameters();
     super.initState();
   }
 
   Future<bool> _verify(String message, String signature, String key) async{
     var result = await platform.invokeMethod('verify', {'message': message, 'signature': signature, 'key' : key});
     return result;
+  }
+
+  Future<void> initParameters() async{
+    String dbPath = await getLocalPath();
+    dbPath = dbPath + '/new';
+    current_b64_key = await signer.getCurrentPubKey();
+    next_b64_key = await signer.getNextPubKey();
+    await Keri.initKel(inputAppDir: dbPath);
   }
 
   @override
@@ -90,37 +89,31 @@ class _MyAppState extends State<MyApp> {
                   setState(() {
 
                   });
-                  String dbPath = await getLocalPath();
-                  dbPath = dbPath + '/new';
-                  current_b64_key = await signer.getCurrentPubKey();
-                  next_b64_key = await signer.getNextPubKey();
-                  await api.initKel(inputAppDir: dbPath);
-
                   List<PublicKey> vec1 = [];
-                  vec1.add(PublicKey(algorithm: KeyType.Ed25519, key: current_b64_key));
+                  vec1.add(await Keri.newPublicKey(kt: KeyType.Ed25519, keyB64: current_b64_key));
                   List<PublicKey> vec2 = [];
-                  vec2.add(PublicKey(algorithm: KeyType.Ed25519, key: next_b64_key));
+                  vec2.add(await Keri.newPublicKey(kt: KeyType.Ed25519, keyB64: next_b64_key));
                   List<String> vec3 = [];
-                  print("incept keys: ${vec1[0].key}, ${vec2[0].key}");
-                  icp_event = await api.incept(publicKeys: vec1, nextPubKeys: vec2, witnesses: vec3, witnessThreshold: 0);
+                  print("incept keys: ${vec1[0].publicKey}, ${vec2[0].publicKey}");
+                  icp_event = await Keri.incept(publicKeys: vec1, nextPubKeys: vec2, witnesses: vec3, witnessThreshold: 0);
                   hex_signature = await signer.sign(icp_event);
                   print("Hex signature: $hex_signature");
 
                   //Sign icp event
-                  signature = Signature(algorithm: SignatureType.Ed25519Sha512, key: hex_signature);
+                  signature = await Keri.signatureFromHex(st: SignatureType.Ed25519Sha512, signature: hex_signature);
 
-                  controller = await api.finalizeInception(event: icp_event, signature: signature);
-                  kel = await api.getKel(cont: controller);
+                  controller = await Keri.finalizeInception(event: icp_event, signature: signature);
+                  kel = await Keri.getKel(cont: controller);
                   print("Current controller kel: $kel");
 
-                  add_watcher_message = await api.addWatcher(controller: controller, watcherOobi: watcher_oobi);
+                  add_watcher_message = await Keri.addWatcher(controller: controller, watcherOobi: watcher_oobi);
                   print("\nController generate end role message to add witness: $add_watcher_message");
 
                   hex_sig = await signer.sign(add_watcher_message);
-                  signature = Signature(algorithm: SignatureType.Ed25519Sha512, key: hex_sig);
+                  signature = await Keri.signatureFromHex(st: SignatureType.Ed25519Sha512, signature: hex_sig);
                   print("end role message signature: $hex_sig");
 
-                  await api.finalizeEvent(identifier: controller, event: add_watcher_message, signature: signature);
+                  await Keri.finalizeEvent(identifier: controller, event: add_watcher_message, signature: signature);
                 },
                 child: const Text("Scan", style: TextStyle(fontWeight: FontWeight.bold),),
                 shape: RoundedRectangleBorder(
@@ -139,7 +132,7 @@ class _MyAppState extends State<MyApp> {
                   );
                   print("\nSending issuer oobi to watcher: $issuer_oobi");
                   print("Querying abour issuer kel...");
-                  await api.query(controller: controller, oobisJson: issuer_oobi);
+                  //await api.query(controller: controller, oobisJson: issuer_oobi);
                   setState(() {
 
                   });
@@ -167,7 +160,7 @@ class _MyAppState extends State<MyApp> {
                   var attachmentStream = '-FAB' + splitAcdc[1];
                   toVerify = splitAcdc[0];
                   print(attachmentStream);
-                  key_sig_pair = await api.getCurrentPublicKey(attachment: attachmentStream);
+                  key_sig_pair = await Keri.getCurrentPublicKey(attachment: attachmentStream);
                   print(key_sig_pair);
                 },
                 child: const Text("Scan", style: TextStyle(fontWeight: FontWeight.bold),),

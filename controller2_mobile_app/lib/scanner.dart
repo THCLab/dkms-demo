@@ -2,6 +2,7 @@
 import "dart:io";
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_scanner/mobile_scanner.dart' as mb;
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 class Scanner extends StatefulWidget {
   final int mode;
@@ -15,7 +16,7 @@ class _ScannerState extends State<Scanner> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   late QRViewController controller;
   var scannedData = 'Scan a code';
-  Barcode? result;
+  mb.Barcode? result;
   late int mode;
 
   @override
@@ -24,19 +25,19 @@ class _ScannerState extends State<Scanner> {
     super.initState();
   }
 
-  @override
-  void reassemble() {
-    super.reassemble();
-    if (Platform.isAndroid) {
-      controller.pauseCamera();
-    } else if (Platform.isIOS) {
-      controller.resumeCamera();
-    }
-  }
+  // @override
+  // void reassemble() {
+  //   super.reassemble();
+  //   if (Platform.isAndroid) {
+  //     controller.pauseCamera();
+  //   } else if (Platform.isIOS) {
+  //     controller.resumeCamera();
+  //   }
+  // }
 
   @override
   void dispose() {
-    controller.dispose();
+    //controller.dispose();
     super.dispose();
   }
 
@@ -54,10 +55,37 @@ class _ScannerState extends State<Scanner> {
                 flex: 5,
                 child: Stack(
                   children: [
-                    QRView(
-                      key: qrKey,
-                      onQRViewCreated: _onQRViewCreated,
+                    mb.MobileScanner(
+                      allowDuplicates: false,
+                      onDetect: (barcode, args){
+                        print(barcode.rawValue);
+                        if(mode ==1){
+                          if(barcode.rawValue!.contains("eid") && barcode.rawValue!.contains("scheme")){
+                            setState((){
+                              result = barcode;
+                            });
+                          }
+                        }
+                        if(mode ==2){
+                          if(barcode.rawValue!.contains("cid") && barcode.rawValue!.contains("role")){
+                            setState((){
+                              result = barcode;
+                            });
+                          }
+                        }
+                        if(mode ==3){
+                          if(barcode.rawValue!.contains("issuer") && barcode.rawValue!.contains("data")){
+                            setState((){
+                              result = barcode;
+                            });
+                          }
+                        }
+                      },
                     ),
+                    // QRView(
+                    //   key: qrKey,
+                    //   onQRViewCreated: _onQRViewCreated,
+                    // ),
                     Center(
                       child: Container(
                         width: 300,
@@ -81,11 +109,11 @@ class _ScannerState extends State<Scanner> {
                     child: (result != null)
                         ? Column(
                       children: [
-                        Text( mode == 1 ? 'Watcher oobi: ${result!.code}' : mode == 2 ? 'Issuer oobi: ${result!.code}' : mode == 3 ? 'ACDC: ${result!.code}' :
+                        Text( mode == 1 ? 'Watcher oobi: ${result!.rawValue}' : mode == 2 ? 'Issuer oobi: ${result!.rawValue}' : mode == 3 ? 'ACDC: ${result!.rawValue}' :
                          'Incorrect mode'),
                         RawMaterialButton(
                             onPressed: () {
-                              Navigator.pop(context, result!.code);
+                              Navigator.pop(context, result!.rawValue);
                             },
                             child: Text("Accept", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green),),
                             shape: RoundedRectangleBorder(
@@ -106,26 +134,26 @@ class _ScannerState extends State<Scanner> {
     );
   }
 
-  void _onQRViewCreated(QRViewController controller) {
-    this.controller = controller;
-    controller.scannedDataStream.listen((scanData) {
-      setState(() {
-        if(mode ==1){
-          if(scanData.code!.contains("eid") && scanData.code!.contains("scheme")){
-            result = scanData;
-          }
-        }
-        if(mode ==2){
-          if(scanData.code!.contains("cid") && scanData.code!.contains("role")){
-            result = scanData;
-          }
-        }
-        if(mode ==3){
-          if(scanData.code!.contains("issuer") && scanData.code!.contains("data")){
-            result = scanData;
-          }
-        }
-      });
-    });
-  }
+  // void _onQRViewCreated(QRViewController controller) {
+  //   this.controller = controller;
+  //   controller.scannedDataStream.listen((scanData) {
+  //     setState(() {
+  //       if(mode ==1){
+  //         if(scanData.code!.contains("eid") && scanData.code!.contains("scheme")){
+  //           result = scanData;
+  //         }
+  //       }
+  //       if(mode ==2){
+  //         if(scanData.code!.contains("cid") && scanData.code!.contains("role")){
+  //           result = scanData;
+  //         }
+  //       }
+  //       if(mode ==3){
+  //         if(scanData.code!.contains("issuer") && scanData.code!.contains("data")){
+  //           result = scanData;
+  //         }
+  //       }
+  //     });
+  //   });
+  // }
 }

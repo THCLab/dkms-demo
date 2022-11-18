@@ -29,10 +29,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  ed25519_signing_plugin:
-    path: ./ed25519_signing_plugin
-  flutter_rust_bridge:
-    path: ./frb_dart
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -43,6 +39,9 @@ dependencies:
     git:
       url: https://github.com/X-SLAYER/qr_code_scanner.git
       ref: flutter-beta
+  mobile_scanner: ^2.0.0
+  keri: ^1.0.0
+  asymmetric_crypto_primitives: ^0.4.1
 
 dev_dependencies:
   flutter_test:
