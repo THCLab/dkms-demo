@@ -2,6 +2,12 @@
 
 This is a demonstration of DKMS infrastructure that presents its usage in practice. The demo consists of 2 controllers, where `controller1` is an issuer and `controller2` is a holder of digitally signed cryptograhpic material that attestates claims about the subject. Controllers communicate indirectly by doing the OOBI's discovery through the infrastructure. For a comprehensive overview of what is going on under the hood, see https://hackmd.io/@bYQK_qO_RLa70okz8n7TQg/rkbCezoBc#Demo-step-by-step-from-the-DKMS-perspective .
 
+## License
+
+EUPL 1.2 
+
+We have distilled the most crucial license specifics to make your adoption seamless: [see here for details](https://github.com/THCLab/licensing).
+
 ## Structure of this repo
 
 - `controller1_terminal_app` – A NodeJS based app that demonstrates NodeJS bindings and serves as data issuer
