@@ -36,11 +36,24 @@ services:
       - witness2
       - witness3
     ports:
-      - "3236:3236"
+      - "3235:3235"
     volumes:
       - type: bind
         source: ./config/watcher.yml
         target: /app/watcher.yml
+    networks:
+      - dkms-network
+
+  mesagkesto:
+    container_name: mesagkesto
+    image: "ghcr.io/argonauths/mesagkesto:0.3.1"
+    restart: always
+    ports:
+      - "3236:3236"
+    volumes:
+      - type: bind
+        source: ./config/messagebox.yml
+        target: /app/messagebox.yml
     networks:
       - dkms-network
 
