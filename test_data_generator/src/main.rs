@@ -9,7 +9,7 @@ use acdc::attributes::InlineAttributes;
 use anyhow::Result;
 use controller::{
     config::ControllerConfig, identifier_controller::IdentifierController, BasicPrefix, Controller,
-    CryptoBox, IdentifierPrefix, KeyManager, LocationScheme, PublicKey, SelfSigningPrefix,
+    CryptoBox, EndRole, IdentifierPrefix, KeyManager, LocationScheme, PublicKey, SelfSigningPrefix,
 };
 use keri::{
     actor::prelude::SelfAddressingIdentifier, prefix::IndexedSignature,
@@ -158,7 +158,7 @@ pub async fn test_generating() -> Result<()> {
         db_path: verifying_id_path,
         ..Default::default()
     })?);
-    let witness: LocationScheme = serde_json::from_str(r#"{"eid":"BJq7UABlttINuWJh1Xl2lkqZG4NTdUdqnbFJDa6ZyxCC","scheme":"http","url":"http://witness1.sandbox.argo.colossi.network/"}"#).unwrap();
+    let witness_oobi: LocationScheme = serde_json::from_str(r#"{"eid":"BJq7UABlttINuWJh1Xl2lkqZG4NTdUdqnbFJDa6ZyxCC","scheme":"http","url":"http://witness1.sandbox.argo.colossi.network/"}"#).unwrap();
     let witness_id: BasicPrefix = "BJq7UABlttINuWJh1Xl2lkqZG4NTdUdqnbFJDa6ZyxCC".parse()?;
 
     let messagebox_oobi: LocationScheme = serde_json::from_str(r#"{"eid":"BFY1nGjV9oApBzo5Oq5JqjwQsZEQqsCCftzo3WJjMMX-","scheme":"http","url":"http://messagebox.sandbox.argo.colossi.network/"}"#).unwrap();
@@ -173,7 +173,7 @@ pub async fn test_generating() -> Result<()> {
         out_path,
         signing_controller.clone(),
         signing_key_manager.clone(),
-        witness.clone(),
+        witness_oobi.clone(),
         Some(messagebox_oobi),
         None,
     )
@@ -185,7 +185,7 @@ pub async fn test_generating() -> Result<()> {
         out_path,
         verifying_controller,
         verifying_key_manager.clone(),
-        witness,
+        witness_oobi.clone(),
         None,
         Some(watcher_oobi),
     )
@@ -205,7 +205,8 @@ pub async fn test_generating() -> Result<()> {
     let mut file = File::create(path)?;
     file.write_all(&said::version::Encode::encode(&acdc)?)?;
 
-    let cred_said: SelfAddressingIdentifier = acdc.clone().digest.unwrap().to_string().parse().unwrap();
+    let cred_said: SelfAddressingIdentifier =
+        acdc.clone().digest.unwrap().to_string().parse().unwrap();
 
     let (vc_id, ixn) = signing_identifier.issue(cred_said.clone())?;
     let signature = SelfSigningPrefix::new(
@@ -240,7 +241,27 @@ pub async fn test_generating() -> Result<()> {
     let mut file = File::create(path)?;
     file.write_all(&encoded)?;
 
-    let exn = messagebox::forward_message(verifying_identifier.id.to_string(), String::from_utf8(said::version::Encode::encode(&acdc)?).unwrap());
+    fs::create_dir_all("./generated/messagebox").unwrap();
+    // Signer's oobi
+    let end_role_oobi = EndRole {
+        eid: IdentifierPrefix::Basic(witness_id),
+        cid: signing_identifier.id.clone(),
+        role: keri::oobi::Role::Witness,
+    };
+    let oobi0 = serde_json::to_string(&witness_oobi).unwrap();
+    let oobi1 = serde_json::to_string(&end_role_oobi).unwrap();
+    let path = "./generated/messagebox/oobi0";
+    let mut file = File::create(path)?;
+    file.write_all(&oobi0.as_bytes())?;
+
+    let path = "./generated/messagebox/oobi1";
+    let mut file = File::create(path)?;
+    file.write_all(&oobi1.as_bytes())?;
+
+    let exn = messagebox::forward_message(
+        verifying_identifier.id.to_string(),
+        String::from_utf8(said::version::Encode::encode(&acdc)?).unwrap(),
+    );
     let signature = SelfSigningPrefix::new(
         cesrox::primitives::codes::self_signing::SelfSigning::Ed25519Sha512,
         signing_key_manager.sign(&exn.to_string().as_bytes())?,
@@ -249,7 +270,6 @@ pub async fn test_generating() -> Result<()> {
 
     println!("\nExchange: {}", signed_exn);
 
-    fs::create_dir_all("./generated/messagebox").unwrap();
     let path = "./generated/messagebox/exn";
     let mut file = File::create(path)?;
     file.write_all(&signed_exn.as_bytes())?;
@@ -260,13 +280,12 @@ pub async fn test_generating() -> Result<()> {
         signing_key_manager.sign(&qry.to_string().as_bytes())?,
     );
     let signed_qry = signing_identifier.sign_to_cesr(&qry.to_string(), signature, 0)?;
-    
+
     println!("\nQuery: {}", signed_qry);
 
     let path = "./generated/messagebox/qry";
     let mut file = File::create(path)?;
     file.write_all(&signed_qry.as_bytes())?;
-
 
     Ok(())
 }
