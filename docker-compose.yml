@@ -1,11 +1,21 @@
 version: "3.9"
 services:
   witness: &witness
-    container_name: keriox-witness1
+    container_name: keriox-witness
     image: "ghcr.io/thclab/keriox-witness:latest"
     restart: always
     networks:
       - dkms-network
+
+  witness1:
+    container_name: keriox-witness1
+    <<: *witness
+    ports:
+      - "3232:3232"
+    volumes:
+      - type: bind
+        source: ./config/witness1.yml
+        target: /app/witness.yml
 
   witness2:
     container_name: keriox-witness2
