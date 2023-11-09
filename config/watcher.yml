@@ -5,12 +5,12 @@ http_port: 3235
 initial_oobis:
   - eid: "BDg1zxxf8u4Hx5IPraZzmStfSCZFZbDzMHjqVcFW5OfP"
     scheme: "http"
-    url: "http://keriox-witness1:3232/"
+    url: "http://keriox-witness3:3234/"
   - eid: "BDg3H7Sr-eES0XWXiO8nvMxW6mD_1LxLeE1nuiZxhGp4"
     scheme: "http"
     url: "http://keriox-witness2:3233/"
   - eid: "BJq7UABlttINuWJh1Xl2lkqZG4NTdUdqnbFJDa6ZyxCC"
     scheme: "http"
-    url: "http://keriox-witness3:3234/"
+    url: "http://keriox-witness1:3232/"
 escrow_config:
   default_timeout: 60
