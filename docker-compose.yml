@@ -56,8 +56,10 @@ services:
 
   mesagkesto:
     container_name: mesagkesto
-    image: "ghcr.io/argonauths/mesagkesto:0.3.1"
+    image: "ghcr.io/argonauths/mesagkesto:0.3.2"
     restart: always
+    depends_on:
+      - watcher
     ports:
       - "3236:3236"
     volumes:

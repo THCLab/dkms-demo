@@ -159,18 +159,21 @@ pub async fn test_generating() -> Result<()> {
         ..Default::default()
     })?);
     let witness_oobi: LocationScheme = serde_json::from_str(r#"{"eid":"BJq7UABlttINuWJh1Xl2lkqZG4NTdUdqnbFJDa6ZyxCC","scheme":"http","url":"http://witness1.sandbox.argo.colossi.network/"}"#).unwrap();
+    let witness_oobi: LocationScheme = serde_json::from_str(r#"{"eid":"BJq7UABlttINuWJh1Xl2lkqZG4NTdUdqnbFJDa6ZyxCC","scheme":"http","url":"http://localhost:3232/"}"#).unwrap();
     let witness_id: BasicPrefix = "BJq7UABlttINuWJh1Xl2lkqZG4NTdUdqnbFJDa6ZyxCC".parse()?;
 
     let messagebox_oobi: LocationScheme = serde_json::from_str(r#"{"eid":"BFY1nGjV9oApBzo5Oq5JqjwQsZEQqsCCftzo3WJjMMX-","scheme":"http","url":"http://messagebox.sandbox.argo.colossi.network/"}"#).unwrap();
+    let messagebox_oobi: LocationScheme = serde_json::from_str(r#"{"eid":"BFY1nGjV9oApBzo5Oq5JqjwQsZEQqsCCftzo3WJjMMX-","scheme":"http","url":"http://localhost:8080/"}"#).unwrap();
     let messagebox_id = "BFY1nGjV9oApBzo5Oq5JqjwQsZEQqsCCftzo3WJjMMX-";
 
     let watcher_oobi: LocationScheme = serde_json::from_str(r#"{"eid":"BF2t2NPc1bwptY1hYV0YCib1JjQ11k9jtuaZemecPF5b","scheme":"http","url":"http://watcher.sandbox.argo.colossi.network/"}"#).unwrap();
+    let watcher_oobi: LocationScheme = serde_json::from_str(r#"{"eid":"BF2t2NPc1bwptY1hYV0YCib1JjQ11k9jtuaZemecPF5b","scheme":"http","url":"http://localhost:3235/"}"#).unwrap();
 
     let signing_key_manager = Arc::new(CryptoBox::new().unwrap());
     let dir_path_str = "./generated/identifier1";
     let out_path = PathBuf::from(dir_path_str);
     let signing_identifier = setup_identifier(
-        out_path,
+        out_path.clone(),
         signing_controller.clone(),
         signing_key_manager.clone(),
         witness_oobi.clone(),
@@ -180,9 +183,9 @@ pub async fn test_generating() -> Result<()> {
     .await?;
 
     let verifying_key_manager = Arc::new(CryptoBox::new().unwrap());
-    let out_path = PathBuf::from("./generated/identifier2");
+    let out_path2 = PathBuf::from("./generated/identifier2");
     let verifying_identifier = setup_identifier(
-        out_path,
+        out_path2.clone(),
         verifying_controller,
         verifying_key_manager.clone(),
         witness_oobi.clone(),
@@ -213,6 +216,7 @@ pub async fn test_generating() -> Result<()> {
         cesrox::primitives::codes::self_signing::SelfSigning::Ed25519Sha512,
         signing_key_manager.sign(&ixn)?,
     );
+    assert_eq!(vc_id.to_string(), cred_said.to_string());
     signing_identifier.finalize_event(&ixn, signature).await?;
 
     let said = match vc_id {
@@ -223,12 +227,21 @@ pub async fn test_generating() -> Result<()> {
     };
     signing_identifier.notify_witnesses().await?;
 
+
     let qry = query_mailbox(
         &signing_identifier,
         signing_key_manager.clone(),
         &witness_id,
     )
     .await?;
+
+    let mut path = out_path;
+    path.push("kel");
+    let mut file = File::create(path)?;
+    file.write_all(signing_identifier.get_kel()?.as_bytes())?;
+    signing_identifier.notify_backers().await?;
+    
+    println!("\nkel: {:?}", signing_identifier.get_kel());
 
     // Save tel to file
     let tel = signing_controller.tel.get_tel(&said)?;
@@ -244,17 +257,17 @@ pub async fn test_generating() -> Result<()> {
     fs::create_dir_all("./generated/messagebox").unwrap();
     // Signer's oobi
     let end_role_oobi = EndRole {
-        eid: IdentifierPrefix::Basic(witness_id),
+        eid: IdentifierPrefix::Basic(witness_id.clone()),
         cid: signing_identifier.id.clone(),
         role: keri::oobi::Role::Witness,
     };
     let oobi0 = serde_json::to_string(&witness_oobi).unwrap();
     let oobi1 = serde_json::to_string(&end_role_oobi).unwrap();
-    let path = "./generated/messagebox/oobi0";
+    let path = "./generated/identifier1/oobi0";
     let mut file = File::create(path)?;
     file.write_all(&oobi0.as_bytes())?;
 
-    let path = "./generated/messagebox/oobi1";
+    let path = "./generated/identifier1/oobi1";
     let mut file = File::create(path)?;
     file.write_all(&oobi1.as_bytes())?;
 
@@ -266,6 +279,7 @@ pub async fn test_generating() -> Result<()> {
         cesrox::primitives::codes::self_signing::SelfSigning::Ed25519Sha512,
         signing_key_manager.sign(&exn.to_string().as_bytes())?,
     );
+    
     let signed_exn = signing_identifier.sign_to_cesr(&exn.to_string(), signature, 0)?;
 
     println!("\nExchange: {}", signed_exn);
@@ -274,18 +288,56 @@ pub async fn test_generating() -> Result<()> {
     let mut file = File::create(path)?;
     file.write_all(&signed_exn.as_bytes())?;
 
+    // Verifier's oobi
+    let end_role_oobi = EndRole {
+        eid: IdentifierPrefix::Basic(witness_id),
+        cid: verifying_identifier.id.clone(),
+        role: keri::oobi::Role::Witness,
+    };
+    let oobi00 = serde_json::to_string(&witness_oobi).unwrap();
+    let oobi11 = serde_json::to_string(&end_role_oobi).unwrap();
+    let path = "./generated/identifier2/oobi0";
+    let mut file = File::create(path)?;
+    file.write_all(&oobi00.as_bytes())?;
+
+    let path = "./generated/identifier2/oobi1";
+    let mut file = File::create(path)?;
+    file.write_all(&oobi11.as_bytes())?;
+
     let qry = messagebox::query_by_sn(verifying_identifier.id.to_string(), 0);
     let signature = SelfSigningPrefix::new(
         cesrox::primitives::codes::self_signing::SelfSigning::Ed25519Sha512,
-        signing_key_manager.sign(&qry.to_string().as_bytes())?,
+        verifying_key_manager.sign(&qry.to_string().as_bytes())?,
     );
-    let signed_qry = signing_identifier.sign_to_cesr(&qry.to_string(), signature, 0)?;
+    let signed_qry = verifying_identifier.sign_to_cesr(&qry.to_string(), signature, 0)?;
 
     println!("\nQuery: {}", signed_qry);
 
     let path = "./generated/messagebox/qry";
     let mut file = File::create(path)?;
     file.write_all(&signed_qry.as_bytes())?;
+
+    let acdc_d = acdc.digest.clone().unwrap().to_string().parse().unwrap();
+    let acdc_sai: SelfAddressingIdentifier = acdc.digest.unwrap().to_string().parse().unwrap();
+    let acdc_ri: IdentifierPrefix = acdc.registry_identifier.parse().unwrap();
+    let qry = verifying_identifier.query_tel(acdc_ri, acdc_d)?;
+    let signature = SelfSigningPrefix::new(
+        cesrox::primitives::codes::self_signing::SelfSigning::Ed25519Sha512,
+        verifying_key_manager.sign(&qry.encode().unwrap())?,
+    );
+    let signed_qry = verifying_identifier.sign_to_cesr(&String::from_utf8(qry.encode().unwrap()).unwrap(), signature.clone(), 0)?;
+     let path = "./generated/messagebox/tel_qry";
+    let mut file = File::create(path)?;
+    file.write_all(&signed_qry.as_bytes())?;
+
+    // verifying_identifier.source.resolve_oobi(serde_json::from_str(&oobi0).unwrap()).await?;
+    verifying_identifier.source.resolve_oobi(serde_json::from_str(&oobi1).unwrap()).await?;
+    verifying_identifier.finalize_tel_query(&signing_identifier.id, qry, signature).await?;
+
+    let tel = verifying_identifier.source.tel.get_tel(&cred_said);
+    let state = verifying_identifier.source.tel.get_vc_state(&cred_said);
+    println!("state: {:?}", state);
+
 
     Ok(())
 }
