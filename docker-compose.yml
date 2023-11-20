@@ -2,7 +2,7 @@ version: "3.9"
 services:
   witness: &witness
     container_name: keriox-witness
-    image: "ghcr.io/thclab/keriox-witness:latest"
+    image: "ghcr.io/thclab/keriox-witness:0.4.3"
     restart: always
     networks:
       - dkms-network
@@ -39,7 +39,7 @@ services:
 
   watcher:
     container_name: keriox-watcher
-    image: "ghcr.io/thclab/keriox-watcher:latest"
+    image: "ghcr.io/thclab/keriox-watcher:0.4.3"
     restart: always
     depends_on:
       - witness
@@ -56,7 +56,7 @@ services:
 
   mesagkesto:
     container_name: mesagkesto
-    image: "ghcr.io/argonauths/mesagkesto:0.3.2"
+    image: "ghcr.io/argonauths/mesagkesto:0.3.3"
     restart: always
     depends_on:
       - watcher

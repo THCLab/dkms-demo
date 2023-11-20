@@ -1,6 +1,6 @@
 db_path: "db/"
 http_port: 3234
-public_url: "http://localhost:3234/"
+public_url: "http://keriox-witness3:3234/"
 seed: "AcwFTk-wgk3ZT2buPRIbK-zxgPx-TKbaegQvPEivN90Y"
 escrow_config:
   default_timeout: 60
