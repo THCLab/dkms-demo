@@ -3,5 +3,9 @@
 ## Repository structure
 
 - `config` - folder with configuration files for docker compose,
-- `test_data_generator` - rust project for generating events used in tests. Pregenerated data is stored in `test_data_generator/generated` folder, to regenerate them, run `test_generating` test,
+- `events` - pregenerated keri events,
 - `scripts` - folder with scripts, that tests infrastructure.
+
+## Usage
+
+To start infrastructure run `docker compose up`.
