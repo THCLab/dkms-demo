@@ -48,9 +48,7 @@ pub async fn handle_init(alias: String, keys_file: Option<PathBuf>) -> Result<()
     db_path.push("db");
 
     let keys = match keys_file {
-        Some(file_path) => {
-            KeysConfig::from_config_file(file_path)?
-        }
+        Some(file_path) => KeysConfig::from_config_file(file_path)?,
         None => KeysConfig::default(),
     };
     let (npk, _nsk) = keys

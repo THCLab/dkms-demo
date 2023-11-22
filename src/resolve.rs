@@ -1,17 +1,37 @@
 use std::path::PathBuf;
 
 use config_file::FromConfigFile;
-use controller::{Oobi, Controller, config::ControllerConfig};
+use controller::Oobi;
 
-use crate::CliError;
+use crate::{
+    utils::{load_controller, load_id},
+    CliError,
+};
 
 pub async fn handle_resolve(alias: &str, path: PathBuf) -> Result<(), CliError> {
-	let mut db_path = PathBuf::from(".");
-	db_path.push(alias);
-	db_path.push("db");
-	let cont = Controller::new(ControllerConfig { db_path, .. ControllerConfig::default()}).unwrap();
+    let cont = load_controller(alias).unwrap();
     for oobi in Vec::<Oobi>::from_config_file(path)? {
-		cont.resolve_oobi(oobi).await.unwrap();
-	};
-	Ok(())
+        cont.resolve_oobi(oobi).await.unwrap();
+    }
+    Ok(())
+}
+
+/// Returns urls of witness of alias
+pub async fn handle_witness(alias: &str) -> Result<Vec<url::Url>, CliError> {
+    let id = load_id(alias).unwrap();
+    let witnesses = id
+        .source
+        .get_state(&id.id)
+        .unwrap()
+        .witness_config
+        .witnesses;
+    Ok(witnesses
+        .into_iter()
+        .flat_map(|wit| {
+            id.source
+                .get_loc_schemas(&controller::IdentifierPrefix::Basic(wit))
+                .unwrap()
+        })
+        .map(|loc| loc.url)
+        .collect())
 }

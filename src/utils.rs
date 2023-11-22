@@ -7,10 +7,11 @@ use std::{
 use anyhow::Result;
 use controller::{
     config::ControllerConfig, identifier_controller::IdentifierController, Controller,
-    IdentifierPrefix,
+    IdentifierPrefix, SeedPrefix,
 };
+use keri::signer::Signer;
 
-fn load_id(alias: String) -> Result<IdentifierController> {
+pub fn load_id(alias: &str) -> Result<IdentifierController> {
     let mut store_path = PathBuf::from(".");
     store_path.push(alias);
     let mut id_path = store_path.clone();
@@ -40,4 +41,27 @@ fn load_id(alias: String) -> Result<IdentifierController> {
         cont,
         Some(registry_id),
     ))
+}
+
+pub fn load_controller(alias: &str) -> Result<Controller> {
+    let mut db_path = PathBuf::from(".");
+    db_path.push(alias);
+    db_path.push("db");
+    let cont = Controller::new(ControllerConfig {
+        db_path,
+        ..ControllerConfig::default()
+    })
+    .unwrap();
+    Ok(cont)
+}
+
+pub fn load_signer(alias: &str) -> Result<Signer> {
+    let mut path = PathBuf::from(".");
+    path.push(alias);
+    path.push("priv_key");
+    let sk_str = fs::read_to_string(path).expect("Should have been able to read the file");
+    let seed: SeedPrefix = sk_str.parse().unwrap();
+    let signer = Signer::new_with_seed(&seed).unwrap();
+
+    Ok(signer)
 }

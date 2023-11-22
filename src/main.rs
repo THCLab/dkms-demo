@@ -3,13 +3,15 @@ use std::path::PathBuf;
 use clap::{Parser, Subcommand};
 use config_file::ConfigFileError;
 use init::handle_init;
+use issue::handle_issue;
 use resolve::handle_resolve;
 use thiserror::Error;
 
-mod utils;
 mod init;
+mod issue;
 mod keri;
 mod resolve;
+mod utils;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -44,6 +46,12 @@ enum Commands {
         #[arg(short, long)]
         file: PathBuf,
     },
+    Issue {
+        #[arg(short, long)]
+        alias: String,
+        #[arg(short, long)]
+        credential_json: String,
+    },
 }
 
 #[derive(Error, Debug)]
@@ -54,6 +62,8 @@ pub enum CliError {
     KeysDerivationError,
     #[error(transparent)]
     FileError(#[from] std::io::Error),
+    #[error("Missing digest field")]
+    MissingDigest,
 }
 
 #[tokio::main]
@@ -83,10 +93,16 @@ async fn main() -> Result<(), CliError> {
     match cli.command {
         Some(Commands::Init { alias, keys_file }) => {
             handle_init(alias, keys_file).await?;
-        },
+        }
         Some(Commands::Resolve { alias, file }) => {
             handle_resolve(&alias, file).await?;
-        },
+        }
+        Some(Commands::Issue {
+            alias,
+            credential_json,
+        }) => {
+            handle_issue(&alias, &credential_json).await?;
+        }
         None => {}
     }
     Ok(())
