@@ -49,7 +49,7 @@ pub async fn handle_init(alias: String, keys_file: Option<PathBuf>) -> Result<()
 
     let keys = match keys_file {
         Some(file_path) => {
-            KeysConfig::from_config_file(file_path).map_err(|_e| CliError::SeedsUnparsable)?
+            KeysConfig::from_config_file(file_path)?
         }
         None => KeysConfig::default(),
     };

@@ -1,12 +1,15 @@
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
+use config_file::ConfigFileError;
 use init::handle_init;
+use resolve::handle_resolve;
 use thiserror::Error;
 
-mod api;
+mod utils;
 mod init;
 mod keri;
+mod resolve;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -35,12 +38,18 @@ enum Commands {
         #[arg(short, long)]
         keys_file: Option<PathBuf>,
     },
+    Resolve {
+        #[arg(short, long)]
+        alias: String,
+        #[arg(short, long)]
+        file: PathBuf,
+    },
 }
 
 #[derive(Error, Debug)]
 pub enum CliError {
-    #[error("Wrong file structure")]
-    SeedsUnparsable,
+    #[error(transparent)]
+    SeedsUnparsable(#[from] ConfigFileError),
     #[error("Keys derivation error")]
     KeysDerivationError,
     #[error(transparent)]
@@ -74,7 +83,10 @@ async fn main() -> Result<(), CliError> {
     match cli.command {
         Some(Commands::Init { alias, keys_file }) => {
             handle_init(alias, keys_file).await?;
-        }
+        },
+        Some(Commands::Resolve { alias, file }) => {
+            handle_resolve(&alias, file).await?;
+        },
         None => {}
     }
     Ok(())
