@@ -1,11 +1,11 @@
-use std::{path::PathBuf};
+use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
-use handlers::handle_init;
+use init::handle_init;
 use thiserror::Error;
 
 mod api;
-mod handlers;
+mod init;
 mod keri;
 
 #[derive(Parser)]
@@ -43,6 +43,8 @@ pub enum CliError {
     SeedsUnparsable,
     #[error("Keys derivation error")]
     KeysDerivationError,
+    #[error(transparent)]
+    FileError(#[from] std::io::Error),
 }
 
 #[tokio::main]
