@@ -1,14 +1,12 @@
-use std::{path::PathBuf, fs::File, io::Write};
+use std::{path::PathBuf};
 
 use clap::{Parser, Subcommand};
-use config_file::FromConfigFile;
-use controller::{SeedPrefix, CesrPrimitive, LocationScheme};
-use ed25519_dalek::SigningKey;
-use serde::{Deserialize, de};
+use handlers::handle_init;
 use thiserror::Error;
 
-mod keri;
 mod api;
+mod handlers;
+mod keri;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -35,33 +33,8 @@ enum Commands {
         #[arg(short, long)]
         alias: String,
         #[arg(short, long)]
-        keys_file: Option<PathBuf>
+        keys_file: Option<PathBuf>,
     },
-}
-
-fn deserialize_key<'de, D>(deserializer: D) -> Result<SeedPrefix, D::Error>
-where
-    D: de::Deserializer<'de>,
-{
-    let s: &str = de::Deserialize::deserialize(deserializer)?;
-    
-    s.parse::<SeedPrefix>().map_err(|e| de::Error::unknown_variant(s, &[]))
-}
-
-#[derive(Deserialize)]
-struct KeysConfig {
-    #[serde(deserialize_with = "deserialize_key")]
-    pub current: SeedPrefix,
-    #[serde(deserialize_with = "deserialize_key")]
-    pub next: SeedPrefix,
-}
-
-impl Default for KeysConfig {
-    fn default() -> Self {
-        let current = SigningKey::generate(&mut rand::rngs::OsRng);
-        let next = SigningKey::generate(&mut rand::rngs::OsRng);
-        Self { current: SeedPrefix::RandomSeed256Ed25519(current.as_bytes().to_vec()), next: SeedPrefix::RandomSeed256Ed25519(next.as_bytes().to_vec()) }
-    }
 }
 
 #[derive(Error, Debug)]
@@ -96,29 +69,10 @@ async fn main() -> Result<(), CliError> {
 
     // You can check for the existence of subcommands, and if found use their
     // matches just as you would the top level cmd
-    match &cli.command {
+    match cli.command {
         Some(Commands::Init { alias, keys_file }) => {
-            let keys = match keys_file {
-                Some(file_path) => {
-                    KeysConfig::from_config_file(file_path).map_err(|_e| CliError::SeedsUnparsable)?
-                },
-                None => KeysConfig::default(),
-            };
-            let (npk, _nsk) = keys.next.derive_key_pair().map_err(|e| CliError::KeysDerivationError)?;
-
-        	let witness_oobi: LocationScheme = serde_json::from_str(r#"{"eid":"BJq7UABlttINuWJh1Xl2lkqZG4NTdUdqnbFJDa6ZyxCC","scheme":"http","url":"http://witness1.sandbox.argo.colossi.network/"}"#).unwrap();
-            let id = api::incept(keys.current, controller::BasicPrefix::Ed25519NT(npk), Some(witness_oobi), alias.clone(), None, None).await.unwrap();
-            
-            // Save next keys seed
-            let store_path = PathBuf::from(".");
-            let mut nsk_path = store_path.clone();
-            nsk_path.push(alias);
-            nsk_path.push("next_priv_key");
-            let mut file = File::create(nsk_path).unwrap();
-            file.write_all(keys.next.to_str().as_bytes()).unwrap();
-            
-            print!("Identifier for alias {} initialized: {}", alias, id);
-        },
+            handle_init(alias, keys_file).await?;
+        }
         None => {}
     }
     Ok(())
