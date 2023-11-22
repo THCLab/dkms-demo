@@ -7,12 +7,12 @@ use controller::{
 };
 use keri::{
     actor::prelude::SelfAddressingIdentifier, prefix::IndexedSignature,
-    query::query_event::SignedKelQuery,
+    query::query_event::SignedKelQuery, signer::Signer,
 };
 
 pub async fn add_watcher(
     id: &IdentifierController,
-    km: Arc<CryptoBox>,
+    km: Arc<Signer>,
     watcher_oobi: &LocationScheme,
 ) -> Result<()> {
     id.source.resolve_loc_schema(&watcher_oobi).await?;
@@ -27,7 +27,7 @@ pub async fn add_watcher(
 
 pub async fn add_messagebox(
     id: &IdentifierController,
-    km: Arc<CryptoBox>,
+    km: Arc<Signer>,
     messagebox_oobi: &LocationScheme,
 ) -> Result<()> {
     id.source.resolve_loc_schema(&messagebox_oobi).await?;
@@ -42,20 +42,19 @@ pub async fn add_messagebox(
 }
 
 pub async fn setup_identifier(
-    out_dir: PathBuf,
     cont: Arc<Controller>,
-    km: Arc<CryptoBox>,
+    signer: Arc<Signer>,
+    next_pk: BasicPrefix,
     witness: LocationScheme,
     messagebox: Option<LocationScheme>,
     watcher: Option<LocationScheme>,
 ) -> Result<IdentifierController> {
-    fs::create_dir_all(&out_dir).unwrap();
-    let pks = vec![BasicPrefix::Ed25519(km.public_key())];
-    let npks = vec![BasicPrefix::Ed25519(km.next_public_key())];
+    let pks = vec![BasicPrefix::Ed25519(signer.public_key())];
+    let npks = vec![next_pk];
     let signing_inception = cont.incept(pks, npks, vec![witness.clone()], 1).await?;
     let signature = SelfSigningPrefix::new(
         cesrox::primitives::codes::self_signing::SelfSigning::Ed25519Sha512,
-        km.sign(&signing_inception.as_bytes())?,
+        signer.sign(&signing_inception.as_bytes())?,
     );
     let signing_identifier = cont
         .finalize_inception(signing_inception.as_bytes(), &signature)
@@ -70,30 +69,28 @@ pub async fn setup_identifier(
         _ => todo!(),
     };
 
-    let queries = query_mailbox(&id, km.clone(), &witness_id).await?;
+    let queries = query_mailbox(&id, signer.clone(), &witness_id).await?;
 
     // Init tel
     let (reg_id, ixn) = id.incept_registry()?;
     let signature = SelfSigningPrefix::new(
         cesrox::primitives::codes::self_signing::SelfSigning::Ed25519Sha512,
-        km.sign(&ixn)?,
+        signer.sign(&ixn)?,
     );
     id.finalize_event(&ixn, signature).await?;
 
     id.notify_witnesses().await?;
 
-    let queries = query_mailbox(&id, km.clone(), &witness_id).await?;
-    let mut path = out_dir.clone();
-    path.push("mailbox_qry_1");
+    let queries = query_mailbox(&id, signer.clone(), &witness_id).await?;
 
     id.registry_id = Some(reg_id);
 
     if let Some(messagebox_oobi) = messagebox {
-        add_messagebox(&id, km.clone(), &messagebox_oobi).await?;
+        add_messagebox(&id, signer.clone(), &messagebox_oobi).await?;
     };
 
     if let Some(watcher_oobi) = watcher {
-        add_watcher(&id, km, &watcher_oobi).await?;
+        add_watcher(&id, signer, &watcher_oobi).await?;
     };
 
     Ok(id)
@@ -101,7 +98,7 @@ pub async fn setup_identifier(
 
 pub async fn query_mailbox(
     id: &IdentifierController,
-    km: Arc<CryptoBox>,
+    km: Arc<Signer>,
     witness_id: &BasicPrefix,
 ) -> Result<Vec<SignedKelQuery>> {
     let mut out = vec![];
@@ -114,10 +111,10 @@ pub async fn query_mailbox(
         let signature = SelfSigningPrefix::Ed25519Sha512(km.sign(&qry.encode().unwrap()).unwrap());
         let signatures = vec![IndexedSignature::new_both_same(signature.clone(), 0)];
         let signed_qry = SignedKelQuery::new_trans(qry.clone(), id.id.clone(), signatures);
-        println!(
-            "\nSigned mailbox query: {}",
-            String::from_utf8(signed_qry.to_cesr()?)?
-        );
+        // println!(
+        //     "\nSigned mailbox query: {}",
+        //     String::from_utf8(signed_qry.to_cesr()?)?
+        // );
         id.finalize_query(vec![(qry, signature)]).await.unwrap();
         out.push(signed_qry)
     }
@@ -170,7 +167,7 @@ pub async fn query_tel(
 pub async fn issue(
     identifier: IdentifierController,
     cred_said: SelfAddressingIdentifier,
-    km: Arc<CryptoBox>,
+    km: Arc<Signer>,
 ) -> Result<()> {
     let (vc_id, ixn) = identifier.issue(cred_said.clone())?;
     let signature = SelfSigningPrefix::new(

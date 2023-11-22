@@ -7,8 +7,8 @@ edition = "2021"
 
 [dependencies]
 tempfile = "3.8"
-keri = { git = "https://github.com/THCLab/keriox.git", features = ["oobi", "mailbox"]}
-controller = { git = "https://github.com/THCLab/keriox.git"}
+keri = { path = "../keriox/keriox_core", features = ["oobi", "mailbox"]}
+controller = { path = "../keriox/components/controller"}
 said = { git = "https://github.com/THCLab/cesrox", branch = "macros", features = ["macros"]} 
 cesrox = { git = "https://github.com/THCLab/cesrox", features = ["cesr-proof"], tag = "v0.1.4" }
 anyhow = { version = "1.0" }
@@ -18,3 +18,8 @@ tokio = { version = "1.14.0", features = ["rt", "macros", "rt-multi-thread"] }
 acdc = {git = "https://github.com/THCLab/acdc-rust"}
 messagebox = { path = "../mesagkesto/messagebox" }
 reqwest =  { version = "0.11.22"}
+clap = { version = "4.4.8", features = ["derive"] }
+config-file = "0.2.3"
+ed25519-dalek = {version = "2.1.0", features = ["rand_core"] }
+rand = "0.8.5"
+thiserror = "1.0.50"
