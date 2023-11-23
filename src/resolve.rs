@@ -1,10 +1,10 @@
 use std::path::PathBuf;
 
 use config_file::FromConfigFile;
-use controller::Oobi;
+use controller::{Oobi, LocationScheme, BasicPrefix, IdentifierPrefix};
 
 use crate::{
-    utils::{load_controller, load},
+    utils::{load_controller, load, load_identifier},
     CliError,
 };
 
@@ -16,22 +16,46 @@ pub async fn handle_resolve(alias: &str, path: PathBuf) -> Result<(), CliError> 
     Ok(())
 }
 
-/// Returns urls of witness of alias
-pub async fn handle_witness(alias: &str) -> Result<Vec<url::Url>, CliError> {
+/// Returns witnesses' identifiers of alias
+pub fn witnesses(alias: &str) -> Result<Vec<IdentifierPrefix>, CliError> {
     let id = load(alias).unwrap();
-    let witnesses = id
+    Ok(id
         .source
         .get_state(&id.id)
         .unwrap()
         .witness_config
-        .witnesses;
-    Ok(witnesses
+        .witnesses
         .into_iter()
-        .flat_map(|wit| {
+        .map(IdentifierPrefix::Basic)
+        .collect()
+    )
+}
+
+/// Returns watchers' identifiers of alias
+pub fn watcher(alias: &str) -> Result<Vec<IdentifierPrefix>, CliError> {
+    let id = load(alias).unwrap();
+    let watchers = id.source.get_watchers(&id.id).unwrap();
+    Ok(watchers)
+}
+
+/// Returns mesagebox' identifiers of alias
+pub fn mesagkesto(alias: &str) -> Result<Vec<IdentifierPrefix>, CliError> {
+    let id = load(alias).unwrap();
+    let msgbox = id.source.get_messagebox_end_role(&id.id).unwrap()
+        .into_iter()
+        .map(|b| b.eid)
+        .collect();
+    Ok(msgbox)
+}
+
+pub fn handle_oobi(alias: &str, ids: &[IdentifierPrefix]) -> Result<Vec<LocationScheme>, CliError> {
+    let id = load(alias).unwrap();
+    Ok(ids
+        .into_iter()
+        .flat_map(|identifier| {
             id.source
-                .get_loc_schemas(&controller::IdentifierPrefix::Basic(wit))
+                .get_loc_schemas(&identifier)
                 .unwrap()
         })
-        .map(|loc| loc.url)
         .collect())
 }

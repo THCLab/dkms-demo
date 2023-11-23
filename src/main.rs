@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
 use config_file::ConfigFileError;
+use controller::IdentifierPrefix;
 use init::handle_init;
 use issue::handle_issue;
 use mesagkesto::MesagkestoError;
@@ -61,6 +62,33 @@ enum Commands {
         content: String,
         #[arg(short, long)]
         receiver: String,
+    },
+    Pull {
+        #[arg(short, long)]
+        alias: String,
+    },
+    Oobi {
+        #[arg(short, long)]
+        alias: String,    
+        #[command(subcommand)]
+        command: Option<OobiCommands>,
+    }
+}
+
+#[derive(Subcommand)]
+enum OobiCommands {
+    Witness,
+    Watcher,
+    Messagebox,
+}
+
+impl OobiCommands {
+    fn handle_subcommand(&self, alias: &str) -> Result<Vec<IdentifierPrefix>, CliError> {
+        match self {
+            OobiCommands::Witness => resolve::witnesses(alias),
+            OobiCommands::Watcher => resolve::watcher(alias),
+            OobiCommands::Messagebox => resolve::mesagkesto(alias),
+        }
     }
 }
 
@@ -121,6 +149,25 @@ async fn main() -> Result<(), CliError> {
             receiver
         }) => {
             mesagkesto::handle_exchange(&alias, &content, &receiver)?;
+        },
+        Some(Commands::Pull {
+            alias,
+        }) => {
+            mesagkesto::handle_pull(&alias)?;
+        },
+        Some(Commands::Oobi {
+            alias,
+            command,
+        }) => {
+            if let Some(com) = command {
+                let ids = com.handle_subcommand(&alias)?;
+                let lcs = resolve::handle_oobi(&alias, &ids)?;
+                println!("{}", serde_json::to_string(&lcs).unwrap());
+            } else {
+                let id = utils::load_identifier(&alias).unwrap();
+                let lcs = resolve::handle_oobi(&alias, &[id])?;
+                println!("{}", serde_json::to_string(&lcs).unwrap());
+            }
         },
         None => {}
     }
