@@ -5,12 +5,12 @@ use serde_json::Value;
 
 use crate::{
     keri::issue,
-    utils::{load_id, load_signer},
+    utils::{load, load_signer},
     CliError,
 };
 
 pub async fn handle_issue(alias: &str, data: &str) -> Result<(), CliError> {
-    let id = load_id(alias).unwrap();
+    let id = load(alias).unwrap();
     let root: Value = serde_json::from_str(data).unwrap();
     let digest: &str = root
         .get("d")

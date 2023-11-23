@@ -4,7 +4,7 @@ use config_file::FromConfigFile;
 use controller::Oobi;
 
 use crate::{
-    utils::{load_controller, load_id},
+    utils::{load_controller, load},
     CliError,
 };
 
@@ -18,7 +18,7 @@ pub async fn handle_resolve(alias: &str, path: PathBuf) -> Result<(), CliError> 
 
 /// Returns urls of witness of alias
 pub async fn handle_witness(alias: &str) -> Result<Vec<url::Url>, CliError> {
-    let id = load_id(alias).unwrap();
+    let id = load(alias).unwrap();
     let witnesses = id
         .source
         .get_state(&id.id)

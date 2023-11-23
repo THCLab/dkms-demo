@@ -4,6 +4,7 @@ use clap::{Parser, Subcommand};
 use config_file::ConfigFileError;
 use init::handle_init;
 use issue::handle_issue;
+use mesagkesto::MesagkestoError;
 use resolve::handle_resolve;
 use thiserror::Error;
 
@@ -12,6 +13,7 @@ mod issue;
 mod keri;
 mod resolve;
 mod utils;
+mod mesagkesto;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -52,6 +54,14 @@ enum Commands {
         #[arg(short, long)]
         credential_json: String,
     },
+    Exchange {
+        #[arg(short, long)]
+        alias: String,
+        #[arg(short, long)]
+        content: String,
+        #[arg(short, long)]
+        receiver: String,
+    }
 }
 
 #[derive(Error, Debug)]
@@ -64,6 +74,8 @@ pub enum CliError {
     FileError(#[from] std::io::Error),
     #[error("Missing digest field")]
     MissingDigest,
+    #[error(transparent)]
+    MesagkestoError(#[from] MesagkestoError)
 }
 
 #[tokio::main]
@@ -102,7 +114,14 @@ async fn main() -> Result<(), CliError> {
             credential_json,
         }) => {
             handle_issue(&alias, &credential_json).await?;
-        }
+        },
+        Some(Commands::Exchange {
+            alias,
+            content,
+            receiver
+        }) => {
+            mesagkesto::handle_exchange(&alias, &content, &receiver)?;
+        },
         None => {}
     }
     Ok(())

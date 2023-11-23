@@ -11,7 +11,7 @@ use controller::{
 };
 use keri::signer::Signer;
 
-pub fn load_id(alias: &str) -> Result<IdentifierController> {
+pub fn load(alias: &str) -> Result<IdentifierController> {
     let mut store_path = PathBuf::from(".");
     store_path.push(alias);
     let mut id_path = store_path.clone();
@@ -41,6 +41,20 @@ pub fn load_id(alias: &str) -> Result<IdentifierController> {
         cont,
         Some(registry_id),
     ))
+}
+
+pub fn load_identifier(alias: &str) -> Result<IdentifierPrefix> {
+    let mut store_path = PathBuf::from(".");
+    store_path.push(alias);
+    let mut id_path = store_path.clone();
+    id_path.push("id");
+
+    let identifier: IdentifierPrefix = fs::read_to_string(id_path)
+        .expect("Should have been able to read the file")
+        .parse()
+        .unwrap();
+    Ok(identifier)
+    
 }
 
 pub fn load_controller(alias: &str) -> Result<Controller> {
