@@ -143,7 +143,7 @@ async fn main() -> Result<(), CliError> {
             content,
             receiver,
         }) => {
-            mesagkesto::handle_exchange(&alias, &content, &receiver)?;
+            println!("{}", mesagkesto::handle_exchange(&alias, &content, &receiver)?);
         }
         Some(Commands::Pull { alias }) => {
             mesagkesto::handle_pull(&alias)?;
