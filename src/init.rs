@@ -1,4 +1,9 @@
-use std::{fs::File, io::Write, path::PathBuf, sync::Arc};
+use std::{
+    fs::{self, File},
+    io::Write,
+    path::PathBuf,
+    sync::Arc,
+};
 
 use config_file::FromConfigFile;
 use controller::{
@@ -42,8 +47,10 @@ where
 
 pub async fn handle_init(alias: String, keys_file: Option<PathBuf>) -> Result<(), CliError> {
     // Compute kel database path
-    let mut store_path = PathBuf::from(".");
+    let mut store_path = home::home_dir().unwrap();
+    store_path.push(".keri-cli");
     store_path.push(&alias);
+    fs::create_dir_all(&store_path).unwrap();
     let mut db_path = store_path.clone();
     db_path.push("db");
 
@@ -56,7 +63,7 @@ pub async fn handle_init(alias: String, keys_file: Option<PathBuf>) -> Result<()
         .derive_key_pair()
         .map_err(|e| CliError::KeysDerivationError)?;
 
-    let witness_oobi: LocationScheme = serde_json::from_str(r#"{"eid":"BJq7UABlttINuWJh1Xl2lkqZG4NTdUdqnbFJDa6ZyxCC","scheme":"http","url":"http://witness1.sandbox.argo.colossi.network/"}"#).unwrap();
+    let witness_oobi: LocationScheme = serde_json::from_str(r#"{"eid":"BJq7UABlttINuWJh1Xl2lkqZG4NTdUdqnbFJDa6ZyxCC","scheme":"http","url":"http://localhost:3232/"}"#).unwrap();
 
     let id = incept(
         db_path,
@@ -72,7 +79,6 @@ pub async fn handle_init(alias: String, keys_file: Option<PathBuf>) -> Result<()
 
     // Save next keys seed
     let mut nsk_path = store_path.clone();
-    nsk_path.push(&alias);
     nsk_path.push("next_priv_key");
     let mut file = File::create(nsk_path).unwrap();
     file.write_all(keys.next.to_str().as_bytes()).unwrap();
@@ -83,19 +89,20 @@ pub async fn handle_init(alias: String, keys_file: Option<PathBuf>) -> Result<()
     let mut id_path = store_path.clone();
     id_path.push("id");
     let mut file = File::create(id_path)?;
-    file.write_all(id.id.to_string().as_bytes())?;
+    file.write_all(&id.id.to_string().as_bytes())?;
 
     // Save registry identifier
     let mut reg_path = store_path.clone();
     reg_path.push("reg_id");
     let mut file = File::create(reg_path)?;
-    file.write_all(id.registry_id.unwrap().to_string().as_bytes())?;
+    file.write_all(id.registry_id.as_ref().unwrap().to_string().as_bytes())?;
 
     // Save private key
     let mut priv_key_path = store_path.clone();
     priv_key_path.push("priv_key");
     let mut file = File::create(priv_key_path)?;
     file.write_all(keys.current.to_str().as_bytes())?;
+
     Ok(())
 }
 

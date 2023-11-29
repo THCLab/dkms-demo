@@ -1,6 +1,5 @@
 use std::{
-    fs::{self},
-    path::PathBuf,
+    fs::{self, File},
     sync::Arc,
 };
 
@@ -12,14 +11,13 @@ use controller::{
 use keri::signer::Signer;
 
 pub fn load(alias: &str) -> Result<IdentifierController> {
-    let mut store_path = PathBuf::from(".");
+    let mut store_path = home::home_dir().unwrap();
+    store_path.push(".keri-cli");
     store_path.push(alias);
     let mut id_path = store_path.clone();
     id_path.push("id");
     let mut registry_path = store_path.clone();
     registry_path.push("reg_id");
-    let mut db_path = store_path.clone();
-    db_path.push("db");
 
     let identifier: IdentifierPrefix = fs::read_to_string(id_path)
         .expect("Should have been able to read the file")
@@ -29,13 +27,7 @@ pub fn load(alias: &str) -> Result<IdentifierController> {
         .expect("Should have been able to read the file")
         .parse()
         .unwrap();
-    let cont = Arc::new(
-        Controller::new(ControllerConfig {
-            db_path: db_path.into(),
-            ..ControllerConfig::default()
-        })
-        .unwrap(),
-    );
+    let cont = Arc::new(load_controller(&alias).unwrap());
     Ok(IdentifierController::new(
         identifier,
         cont,
@@ -44,7 +36,8 @@ pub fn load(alias: &str) -> Result<IdentifierController> {
 }
 
 pub fn load_identifier(alias: &str) -> Result<IdentifierPrefix> {
-    let mut store_path = PathBuf::from(".");
+    let mut store_path = home::home_dir().unwrap();
+    store_path.push(".keri-cli");
     store_path.push(alias);
     let mut id_path = store_path.clone();
     id_path.push("id");
@@ -54,13 +47,14 @@ pub fn load_identifier(alias: &str) -> Result<IdentifierPrefix> {
         .parse()
         .unwrap();
     Ok(identifier)
-    
 }
 
 pub fn load_controller(alias: &str) -> Result<Controller> {
-    let mut db_path = PathBuf::from(".");
+    let mut db_path = home::home_dir().unwrap();
+    db_path.push(".keri-cli");
     db_path.push(alias);
     db_path.push("db");
+
     let cont = Controller::new(ControllerConfig {
         db_path,
         ..ControllerConfig::default()
@@ -70,7 +64,8 @@ pub fn load_controller(alias: &str) -> Result<Controller> {
 }
 
 pub fn load_signer(alias: &str) -> Result<Signer> {
-    let mut path = PathBuf::from(".");
+    let mut path = home::home_dir().unwrap();
+    path.push(".keri-cli");
     path.push(alias);
     path.push("priv_key");
     let sk_str = fs::read_to_string(path).expect("Should have been able to read the file");

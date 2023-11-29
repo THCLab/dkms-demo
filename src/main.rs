@@ -2,7 +2,6 @@ use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
 use config_file::ConfigFileError;
-use controller::IdentifierPrefix;
 use init::handle_init;
 use issue::handle_issue;
 use mesagkesto::MesagkestoError;
@@ -12,9 +11,9 @@ use thiserror::Error;
 mod init;
 mod issue;
 mod keri;
+mod mesagkesto;
 mod resolve;
 mod utils;
-mod mesagkesto;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -43,6 +42,7 @@ enum Commands {
         #[arg(short, long)]
         keys_file: Option<PathBuf>,
     },
+    // Resolves provided oobi and saves it
     Resolve {
         #[arg(short, long)]
         alias: String,
@@ -55,6 +55,8 @@ enum Commands {
         #[arg(short, long)]
         credential_json: String,
     },
+    /// Generate exchange message that can be signed and provided to mesagkesto
+    /// to sent `content` to `receiver`
     Exchange {
         #[arg(short, long)]
         alias: String,
@@ -63,33 +65,26 @@ enum Commands {
         #[arg(short, long)]
         receiver: String,
     },
+    /// Generate query message that can be signed and provided to mesagkesto to
+    /// pull messages for `alias`
     Pull {
         #[arg(short, long)]
         alias: String,
     },
+    /// Returns saved oobis of provided `alias`
     Oobi {
         #[arg(short, long)]
-        alias: String,    
+        alias: String,
         #[command(subcommand)]
         command: Option<OobiCommands>,
-    }
+    },
 }
 
 #[derive(Subcommand)]
-enum OobiCommands {
+pub enum OobiCommands {
     Witness,
     Watcher,
     Messagebox,
-}
-
-impl OobiCommands {
-    fn handle_subcommand(&self, alias: &str) -> Result<Vec<IdentifierPrefix>, CliError> {
-        match self {
-            OobiCommands::Witness => resolve::witnesses(alias),
-            OobiCommands::Watcher => resolve::watcher(alias),
-            OobiCommands::Messagebox => resolve::mesagkesto(alias),
-        }
-    }
 }
 
 #[derive(Error, Debug)]
@@ -103,7 +98,7 @@ pub enum CliError {
     #[error("Missing digest field")]
     MissingDigest,
     #[error(transparent)]
-    MesagkestoError(#[from] MesagkestoError)
+    MesagkestoError(#[from] MesagkestoError),
 }
 
 #[tokio::main]
@@ -121,12 +116,12 @@ async fn main() -> Result<(), CliError> {
 
     // You can see how many times a particular flag or argument occurred
     // Note, only flags can have multiple occurrences
-    match cli.debug {
-        0 => println!("Debug mode is off"),
-        1 => println!("Debug mode is kind of on"),
-        2 => println!("Debug mode is on"),
-        _ => println!("Don't be crazy"),
-    }
+    // match cli.debug {
+    //     0 => println!("Debug mode is off"),
+    //     1 => println!("Debug mode is kind of on"),
+    //     2 => println!("Debug mode is on"),
+    //     _ => println!("Don't be crazy"),
+    // }
 
     // You can check for the existence of subcommands, and if found use their
     // matches just as you would the top level cmd
@@ -142,33 +137,26 @@ async fn main() -> Result<(), CliError> {
             credential_json,
         }) => {
             handle_issue(&alias, &credential_json).await?;
-        },
+        }
         Some(Commands::Exchange {
             alias,
             content,
-            receiver
+            receiver,
         }) => {
             mesagkesto::handle_exchange(&alias, &content, &receiver)?;
-        },
-        Some(Commands::Pull {
-            alias,
-        }) => {
+        }
+        Some(Commands::Pull { alias }) => {
             mesagkesto::handle_pull(&alias)?;
-        },
-        Some(Commands::Oobi {
-            alias,
-            command,
-        }) => {
+        }
+        Some(Commands::Oobi { alias, command }) => {
             if let Some(com) = command {
-                let ids = com.handle_subcommand(&alias)?;
-                let lcs = resolve::handle_oobi(&alias, &ids)?;
+                let lcs = resolve::handle_oobi(&alias, &Some(com))?;
                 println!("{}", serde_json::to_string(&lcs).unwrap());
             } else {
-                let id = utils::load_identifier(&alias).unwrap();
-                let lcs = resolve::handle_oobi(&alias, &[id])?;
+                let lcs = resolve::handle_oobi(&alias, &None)?;
                 println!("{}", serde_json::to_string(&lcs).unwrap());
             }
-        },
+        }
         None => {}
     }
     Ok(())
