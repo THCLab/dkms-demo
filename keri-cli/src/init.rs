@@ -70,7 +70,6 @@ pub async fn handle_init(alias: String, keys_file: Option<PathBuf>) -> Result<()
         keys.current.clone(),
         controller::BasicPrefix::Ed25519NT(npk),
         Some(witness_oobi),
-        alias.clone(),
         None,
         None,
     )
@@ -111,7 +110,6 @@ async fn incept(
     priv_key: SeedPrefix,
     next_key: BasicPrefix,
     witness: Option<LocationScheme>,
-    alias: String,
     messagebox: Option<LocationScheme>,
     watcher: Option<LocationScheme>,
 ) -> anyhow::Result<IdentifierController> {

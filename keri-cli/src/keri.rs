@@ -69,7 +69,7 @@ pub async fn setup_identifier(
         _ => todo!(),
     };
 
-    let queries = query_mailbox(&id, signer.clone(), &witness_id).await?;
+    let _queries = query_mailbox(&id, signer.clone(), &witness_id).await?;
 
     // Init tel
     let (reg_id, ixn) = id.incept_registry()?;
@@ -81,7 +81,8 @@ pub async fn setup_identifier(
 
     id.notify_witnesses().await?;
 
-    let queries = query_mailbox(&id, signer.clone(), &witness_id).await?;
+    let _queries = query_mailbox(&id, signer.clone(), &witness_id).await?;
+    id.notify_backers().await?;
 
     id.registry_id = Some(reg_id);
 
