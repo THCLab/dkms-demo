@@ -1,7 +1,7 @@
 db_path: "./db/"
 oobi_path: "./oobi/"
 http_port: 3236
-public_url: "http://mesagkesto:3236/"
+public_url: "http://172.17.0.1:3236/"
 seed: "AMRXyU3ErhBNdRSDX1zKlrbZGRp1GfCmkRIa58gF07I8"
 server_key: "AAAAky1v068:APA91bHHpGtP6M5h3ICFc9AzY35MrkTmjwblkLlEJ1C0yvkrUu7KDkmkXMzPq2q-0o1l49fKxOeDQaKIkZTTEAIX3Jd45j6KNtSempYqop4Psitvz2Ng7iBz-IeS1SGEs1GpnWseJlpP"
 watcher_oobi: '{"eid":"BF2t2NPc1bwptY1hYV0YCib1JjQ11k9jtuaZemecPF5b","scheme":"http","url":"http://keriox-watcher:3235"}'

@@ -1,6 +1,6 @@
 db_path: "db/"
 http_port: 3233
-public_url: "http://localhost:3233/"
+public_url: "http://172.17.0.1:3233/"
 seed: "A6zz7M08-HQSFq92sJ8KJOT2cZ47x7pXFQLPB0pckB3Q"
 escrow_config:
   default_timeout: 60

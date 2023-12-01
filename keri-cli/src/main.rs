@@ -146,7 +146,9 @@ async fn main() -> Result<(), CliError> {
             println!("{}", mesagkesto::handle_exchange(&alias, &content, &receiver)?);
         }
         Some(Commands::Pull { alias }) => {
-            mesagkesto::handle_pull(&alias)?;
+            let qry = mesagkesto::handle_pull(&alias)?;
+            println!("{}", qry);
+
         }
         Some(Commands::Oobi { alias, command }) => {
             if let Some(com) = command {
