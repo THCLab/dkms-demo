@@ -67,19 +67,18 @@ pub fn handle_oobi(
         Some(OobiCommands::Messagebox) => filter_locations(mesagkesto(&identifier)?),
         None => {
             let witnesses = witnesses(&identifier)?;
+            let locations = filter_locations(witnesses.clone())?;
             let witnesses_oobi = witnesses
                 .clone()
-                .iter()
+                .into_iter()
                 .map(|cid| {
                     Oobi::EndRole(EndRole {
-                        cid: cid.clone(),
+                        eid: cid.clone(),
                         role: keri::oobi::Role::Witness,
-                        eid: identifier.id.clone(),
+                        cid: identifier.id.clone(),
                     })
-                })
-                .chain(filter_locations(witnesses)?.into_iter())
-                .collect();
-            Ok(witnesses_oobi)
+                });
+            Ok(locations.into_iter().chain(witnesses_oobi).collect())
         }
     }
 }
