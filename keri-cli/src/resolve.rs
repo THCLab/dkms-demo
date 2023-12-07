@@ -5,7 +5,7 @@ use controller::{identifier_controller::IdentifierController, EndRole, Identifie
 
 use crate::{
     utils::{load, load_controller},
-    CliError, OobiCommands,
+    CliError, OobiCommands, OobiRoles,
 };
 
 pub async fn handle_resolve(alias: &str, path: PathBuf) -> Result<(), CliError> {
@@ -48,10 +48,7 @@ pub fn mesagkesto(identifeir: &IdentifierController) -> Result<Vec<IdentifierPre
     Ok(msgbox)
 }
 
-pub fn handle_oobi(
-    alias: &str,
-    oobi_command: &Option<OobiCommands>,
-) -> Result<Vec<Oobi>, CliError> {
+pub fn handle_oobi(alias: &str, oobi_command: &Option<OobiRoles>) -> Result<Vec<Oobi>, CliError> {
     let identifier = load(alias).unwrap();
     let filter_locations = |identifiers: Vec<IdentifierPrefix>| -> Result<Vec<Oobi>, CliError> {
         Ok(identifiers
@@ -62,22 +59,19 @@ pub fn handle_oobi(
     };
 
     match oobi_command {
-        Some(OobiCommands::Witness) => filter_locations(witnesses(&identifier)?),
-        Some(OobiCommands::Watcher) => filter_locations(watcher(&identifier)?),
-        Some(OobiCommands::Messagebox) => filter_locations(mesagkesto(&identifier)?),
+        Some(OobiRoles::Witness) => filter_locations(witnesses(&identifier)?),
+        Some(OobiRoles::Watcher) => filter_locations(watcher(&identifier)?),
+        Some(OobiRoles::Messagebox) => filter_locations(mesagkesto(&identifier)?),
         None => {
             let witnesses = witnesses(&identifier)?;
             let locations = filter_locations(witnesses.clone())?;
-            let witnesses_oobi = witnesses
-                .clone()
-                .into_iter()
-                .map(|cid| {
-                    Oobi::EndRole(EndRole {
-                        eid: cid.clone(),
-                        role: keri::oobi::Role::Witness,
-                        cid: identifier.id.clone(),
-                    })
-                });
+            let witnesses_oobi = witnesses.clone().into_iter().map(|cid| {
+                Oobi::EndRole(EndRole {
+                    eid: cid.clone(),
+                    role: keri::oobi::Role::Witness,
+                    cid: identifier.id.clone(),
+                })
+            });
             Ok(locations.into_iter().chain(witnesses_oobi).collect())
         }
     }

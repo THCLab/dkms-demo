@@ -5,16 +5,16 @@ INPUT_DATA_DIR="./payloads"
 keri-cli init -a alice
 keri-cli init -a bob 
 
-keri-cli oobi -a bob > boboobi.json 
-keri-cli resolve -a alice -f boboobi.json 
+keri-cli oobi get -a bob > boboobi.json 
+keri-cli oobi resolve -a alice -f boboobi.json 
 
 ACDC=$(cat "$INPUT_DATA_DIR"/acdc)
 
 keri-cli issue -a alice -c "$ACDC"
 
-EXN=$(keri-cli exchange -a alice -r bob -c "$ACDC")
+EXN=$(keri-cli mesagkesto exchange -a alice -r bob -c "$ACDC")
 
-ALICE_OOBI=$(keri-cli oobi -a alice) 
+ALICE_OOBI=$(keri-cli oobi get -a alice) 
 
 # Parse JSON using jq and iterate through each element in the list
 echo "$ALICE_OOBI" | jq -c '.[]' | while IFS= read -r element; do
@@ -31,7 +31,7 @@ done
 
 curl -X POST $MESAGKESTO_ADDRESS -d $(echo "$EXN")
 
-PULL=$(keri-cli pull -a bob)
+PULL=$(keri-cli mesagkesto query -a bob)
 echo "\nPulling bob's messagebox:"
 
 curl -X POST $MESAGKESTO_ADDRESS -d $(echo "$PULL")

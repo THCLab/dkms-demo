@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, str::FromStr};
 
 use clap::{Parser, Subcommand};
 use config_file::ConfigFileError;
@@ -42,21 +42,25 @@ enum Commands {
         #[arg(short, long)]
         keys_file: Option<PathBuf>,
     },
-    // Resolves provided oobi and saves it
-    Resolve {
-        #[arg(short, long)]
-        alias: String,
-        #[arg(short, long)]
-        file: PathBuf,
-    },
     Issue {
         #[arg(short, long)]
         alias: String,
         #[arg(short, long)]
         credential_json: String,
     },
-    /// Generate exchange message that can be signed and provided to mesagkesto
-    /// to sent `content` to `receiver`
+    Mesagkesto {
+        #[command(subcommand)]
+        command: MesagkestoCommands,
+    },
+    /// Returns saved oobis of provided `alias`
+    Oobi {
+        #[command(subcommand)]
+        command: OobiCommands,
+    },
+}
+
+#[derive(Subcommand)]
+pub enum MesagkestoCommands {
     Exchange {
         #[arg(short, long)]
         alias: String,
@@ -65,23 +69,31 @@ enum Commands {
         #[arg(short, long)]
         receiver: String,
     },
-    /// Generate query message that can be signed and provided to mesagkesto to
-    /// pull messages for `alias`
-    Pull {
+    Query {
         #[arg(short, long)]
         alias: String,
-    },
-    /// Returns saved oobis of provided `alias`
-    Oobi {
-        #[arg(short, long)]
-        alias: String,
-        #[command(subcommand)]
-        command: Option<OobiCommands>,
     },
 }
 
 #[derive(Subcommand)]
 pub enum OobiCommands {
+    Get {
+        #[arg(short, long)]
+        alias: String,
+        #[command(subcommand)]
+        role: Option<OobiRoles>,
+    },
+    // Resolves provided oobi and saves it
+    Resolve {
+        #[arg(short, long)]
+        alias: String,
+        #[arg(short, long)]
+        file: PathBuf,
+    },
+}
+
+#[derive(Subcommand)]
+pub enum OobiRoles {
     Witness,
     Watcher,
     Messagebox,
@@ -129,36 +141,35 @@ async fn main() -> Result<(), CliError> {
         Some(Commands::Init { alias, keys_file }) => {
             handle_init(alias, keys_file).await?;
         }
-        Some(Commands::Resolve { alias, file }) => {
-            handle_resolve(&alias, file).await?;
-        }
         Some(Commands::Issue {
             alias,
             credential_json,
         }) => {
             handle_issue(&alias, &credential_json).await?;
         }
-        Some(Commands::Exchange {
-            alias,
-            content,
-            receiver,
-        }) => {
-            println!("{}", mesagkesto::handle_exchange(&alias, &content, &receiver)?);
-        }
-        Some(Commands::Pull { alias }) => {
-            let qry = mesagkesto::handle_pull(&alias)?;
-            println!("{}", qry);
-
-        }
-        Some(Commands::Oobi { alias, command }) => {
-            if let Some(com) = command {
-                let lcs = resolve::handle_oobi(&alias, &Some(com))?;
-                println!("{}", serde_json::to_string(&lcs).unwrap());
-            } else {
-                let lcs = resolve::handle_oobi(&alias, &None)?;
+        Some(Commands::Mesagkesto { command }) => match command {
+            MesagkestoCommands::Exchange {
+                content,
+                receiver,
+                alias,
+            } => {
+                println!(
+                    "{}",
+                    mesagkesto::handle_exchange(&alias, &content, &receiver)?
+                );
+            }
+            MesagkestoCommands::Query { alias } => {
+                let qry = mesagkesto::handle_pull(&alias)?;
+                println!("{}", qry);
+            }
+        },
+        Some(Commands::Oobi { command }) => match command {
+            OobiCommands::Get { role, alias } => {
+                let lcs = resolve::handle_oobi(&alias, &role)?;
                 println!("{}", serde_json::to_string(&lcs).unwrap());
             }
-        }
+            OobiCommands::Resolve { alias, file } => handle_resolve(&alias, file).await?,
+        },
         None => {}
     }
     Ok(())
