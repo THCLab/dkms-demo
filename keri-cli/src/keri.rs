@@ -71,6 +71,18 @@ pub async fn setup_identifier(
 
     let _queries = query_mailbox(&id, signer.clone(), &witness_id).await?;
 
+    if let Some(messagebox_oobi) = messagebox {
+        add_messagebox(&id, signer.clone(), &messagebox_oobi).await?;
+    };
+
+    if let Some(watcher_oobi) = watcher {
+        add_watcher(&id, signer, &watcher_oobi).await?;
+    };
+
+    Ok(id)
+}
+
+pub async fn incept_registry(id: &mut IdentifierController, signer: Arc<Signer>) -> Result<()> {
     // Init tel
     let (reg_id, ixn) = id.incept_registry()?;
     let signature = SelfSigningPrefix::new(
@@ -81,20 +93,13 @@ pub async fn setup_identifier(
 
     id.notify_witnesses().await?;
 
+    let witness_id = id.source.get_state(&id.id)?.witness_config.witnesses[0].clone();
     let _queries = query_mailbox(&id, signer.clone(), &witness_id).await?;
     id.notify_backers().await?;
 
     id.registry_id = Some(reg_id);
 
-    if let Some(messagebox_oobi) = messagebox {
-        add_messagebox(&id, signer.clone(), &messagebox_oobi).await?;
-    };
-
-    if let Some(watcher_oobi) = watcher {
-        add_watcher(&id, signer, &watcher_oobi).await?;
-    };
-
-    Ok(id)
+    Ok(())
 }
 
 pub async fn query_mailbox(

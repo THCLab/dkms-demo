@@ -23,16 +23,12 @@ pub fn load(alias: &str) -> Result<IdentifierController> {
         .expect("Should have been able to read the file")
         .parse()
         .unwrap();
-    let registry_id: IdentifierPrefix = fs::read_to_string(registry_path)
+    let registry_id: Option<IdentifierPrefix> = fs::read_to_string(registry_path)
         .expect("Should have been able to read the file")
         .parse()
-        .unwrap();
+        .ok();
     let cont = Arc::new(load_controller(&alias).unwrap());
-    Ok(IdentifierController::new(
-        identifier,
-        cont,
-        Some(registry_id),
-    ))
+    Ok(IdentifierController::new(identifier, cont, registry_id))
 }
 
 pub fn load_identifier(alias: &str) -> Result<IdentifierPrefix> {

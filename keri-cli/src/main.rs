@@ -3,16 +3,16 @@ use std::{path::PathBuf, str::FromStr};
 use clap::{Parser, Subcommand};
 use config_file::ConfigFileError;
 use init::handle_init;
-use issue::handle_issue;
 use mesagkesto::MesagkestoError;
 use resolve::handle_resolve;
+use tel::handle_issue;
 use thiserror::Error;
 
 mod init;
-mod issue;
 mod keri;
 mod mesagkesto;
 mod resolve;
+mod tel;
 mod utils;
 
 #[derive(Parser)]
@@ -42,11 +42,9 @@ enum Commands {
         #[arg(short, long)]
         keys_file: Option<PathBuf>,
     },
-    Issue {
-        #[arg(short, long)]
-        alias: String,
-        #[arg(short, long)]
-        credential_json: String,
+    Tel {
+        #[command(subcommand)]
+        command: TelCommands,
     },
     Mesagkesto {
         #[command(subcommand)]
@@ -72,6 +70,20 @@ pub enum MesagkestoCommands {
     Query {
         #[arg(short, long)]
         alias: String,
+    },
+}
+
+#[derive(Subcommand)]
+pub enum TelCommands {
+    Incept {
+        #[arg(short, long)]
+        alias: String,
+    },
+    Issue {
+        #[arg(short, long)]
+        alias: String,
+        #[arg(short, long)]
+        credential_json: String,
     },
 }
 
@@ -141,12 +153,6 @@ async fn main() -> Result<(), CliError> {
         Some(Commands::Init { alias, keys_file }) => {
             handle_init(alias, keys_file).await?;
         }
-        Some(Commands::Issue {
-            alias,
-            credential_json,
-        }) => {
-            handle_issue(&alias, &credential_json).await?;
-        }
         Some(Commands::Mesagkesto { command }) => match command {
             MesagkestoCommands::Exchange {
                 content,
@@ -169,6 +175,17 @@ async fn main() -> Result<(), CliError> {
                 println!("{}", serde_json::to_string(&lcs).unwrap());
             }
             OobiCommands::Resolve { alias, file } => handle_resolve(&alias, file).await?,
+        },
+        Some(Commands::Tel { command }) => match command {
+            TelCommands::Incept { alias } => {
+                tel::handle_tel_incept(&alias).await?;
+            }
+            TelCommands::Issue {
+                alias,
+                credential_json,
+            } => {
+                handle_issue(&alias, &credential_json).await?;
+            }
         },
         None => {}
     }

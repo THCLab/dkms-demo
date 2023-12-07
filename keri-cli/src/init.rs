@@ -90,12 +90,6 @@ pub async fn handle_init(alias: String, keys_file: Option<PathBuf>) -> Result<()
     let mut file = File::create(id_path)?;
     file.write_all(&id.id.to_string().as_bytes())?;
 
-    // Save registry identifier
-    let mut reg_path = store_path.clone();
-    reg_path.push("reg_id");
-    let mut file = File::create(reg_path)?;
-    file.write_all(id.registry_id.as_ref().unwrap().to_string().as_bytes())?;
-
     // Save private key
     let mut priv_key_path = store_path.clone();
     priv_key_path.push("priv_key");
