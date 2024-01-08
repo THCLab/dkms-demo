@@ -1,18 +1,22 @@
-use std::{path::PathBuf, str::FromStr};
+use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
 use config_file::ConfigFileError;
 use init::handle_init;
 use mesagkesto::MesagkestoError;
 use resolve::handle_resolve;
+use said::SaidError;
 use tel::handle_issue;
 use thiserror::Error;
+
+use crate::said::handle_sad;
 
 mod init;
 mod keri;
 mod mesagkesto;
 mod resolve;
 mod tel;
+mod said;
 mod utils;
 
 #[derive(Parser)]
@@ -55,6 +59,10 @@ enum Commands {
         #[command(subcommand)]
         command: OobiCommands,
     },
+    Said {
+        #[command(subcommand)]
+        command: SaidCommands,
+    }
 }
 
 #[derive(Subcommand)]
@@ -111,6 +119,14 @@ pub enum OobiRoles {
     Messagebox,
 }
 
+#[derive(Subcommand)]
+pub enum SaidCommands {
+    SAD {
+        #[arg(short, long)]
+        file: PathBuf,
+    },
+}
+
 #[derive(Error, Debug)]
 pub enum CliError {
     #[error(transparent)]
@@ -123,6 +139,8 @@ pub enum CliError {
     MissingDigest,
     #[error(transparent)]
     MesagkestoError(#[from] MesagkestoError),
+    #[error("Said error: {0}")]
+    SaidError(#[from] SaidError)
 }
 
 #[tokio::main]
@@ -186,6 +204,13 @@ async fn main() -> Result<(), CliError> {
             } => {
                 handle_issue(&alias, &credential_json).await?;
             }
+        },
+        Some(Commands::Said { command }) =>
+            match command {
+                SaidCommands::SAD { file } => {
+                    let sad = handle_sad(file).await?;
+                    println!("{}", sad);
+                },
         },
         None => {}
     }
