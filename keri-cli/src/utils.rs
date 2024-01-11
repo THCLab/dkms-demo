@@ -9,6 +9,9 @@ use controller::{
     IdentifierPrefix, SeedPrefix,
 };
 use keri::signer::Signer;
+use serde_json::json;
+
+use crate::CliError;
 
 pub fn load(alias: &str) -> Result<IdentifierController> {
     let mut store_path = home::home_dir().unwrap();
@@ -19,14 +22,15 @@ pub fn load(alias: &str) -> Result<IdentifierController> {
     let mut registry_path = store_path.clone();
     registry_path.push("reg_id");
 
-    let identifier: IdentifierPrefix = fs::read_to_string(id_path)
+    let identifier: IdentifierPrefix = fs::read_to_string(id_path.clone())
         .expect("Should have been able to read the file")
         .parse()
         .unwrap();
-    let registry_id: Option<IdentifierPrefix> = fs::read_to_string(registry_path)
-        .expect("Should have been able to read the file")
-        .parse()
-        .ok();
+    let registry_id = match fs::read_to_string(registry_path.clone()) {
+        Ok(reg) => reg.parse().ok(),
+        Err(_) => None,
+    };
+    
     let cont = Arc::new(load_controller(&alias).unwrap());
     Ok(IdentifierController::new(identifier, cont, registry_id))
 }
@@ -38,8 +42,8 @@ pub fn load_identifier(alias: &str) -> Result<IdentifierPrefix> {
     let mut id_path = store_path.clone();
     id_path.push("id");
 
-    let identifier: IdentifierPrefix = fs::read_to_string(id_path)
-        .expect("Should have been able to read the file")
+    let identifier: IdentifierPrefix = fs::read_to_string(id_path.clone())
+        .expect(&format!("Should have been able to read the file: {}", id_path.to_str().unwrap()))
         .parse()
         .unwrap();
     Ok(identifier)
@@ -69,4 +73,16 @@ pub fn load_signer(alias: &str) -> Result<Signer> {
     let signer = Signer::new_with_seed(&seed).unwrap();
 
     Ok(signer)
+}
+
+pub fn handle_info(alias: &str) -> Result<(), CliError> {
+    let cont = load(alias).unwrap();
+	let info = if let Some(reg) = cont.registry_id {
+		json!({"id": cont.id, "registry": reg})
+	} else {
+		json!({"id": cont.id})
+	};
+	println!("{}", serde_json::to_string(&info).unwrap());
+	
+    Ok(())
 }

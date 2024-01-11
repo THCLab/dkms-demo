@@ -6,8 +6,9 @@ use init::handle_init;
 use mesagkesto::MesagkestoError;
 use resolve::handle_resolve;
 use said::SaidError;
-use tel::handle_issue;
+use tel::{handle_issue, handle_query};
 use thiserror::Error;
+use utils::handle_info;
 
 use crate::said::handle_sad;
 
@@ -62,6 +63,10 @@ enum Commands {
     Said {
         #[command(subcommand)]
         command: SaidCommands,
+    },
+    Info {
+        #[arg(short, long)]
+        alias: String,
     }
 }
 
@@ -92,6 +97,16 @@ pub enum TelCommands {
         alias: String,
         #[arg(short, long)]
         credential_json: String,
+    },
+    Query {
+        #[arg(short, long)]
+        alias: String,
+        #[arg(short, long)]
+        issuer_id: String,
+        #[arg(short, long)]
+        registry_id: String,
+        #[arg(short, long)]
+        said: String, 
     },
 }
 
@@ -204,6 +219,9 @@ async fn main() -> Result<(), CliError> {
             } => {
                 handle_issue(&alias, &credential_json).await?;
             }
+            TelCommands::Query { alias, issuer_id, registry_id, said } => {
+                handle_query(&alias, &said, &registry_id, &issuer_id).await?;
+            }
         },
         Some(Commands::Said { command }) =>
             match command {
@@ -211,6 +229,9 @@ async fn main() -> Result<(), CliError> {
                     let sad = handle_sad(file).await?;
                     println!("{}", sad);
                 },
+        },
+        Some(Commands::Info { alias }) => {
+            handle_info(&alias)?;
         },
         None => {}
     }

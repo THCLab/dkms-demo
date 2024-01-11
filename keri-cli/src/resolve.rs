@@ -5,12 +5,12 @@ use controller::{identifier_controller::IdentifierController, EndRole, Identifie
 
 use crate::{
     utils::{load, load_controller},
-    CliError, OobiCommands, OobiRoles,
+    CliError, OobiRoles,
 };
 
 pub async fn handle_resolve(alias: &str, path: PathBuf) -> Result<(), CliError> {
     let cont = load_controller(alias).unwrap();
-    let file = fs::read_to_string(path).expect("Should have been able to read the file");
+    let file = fs::read_to_string(path).expect(&format!("Should have been able to read the file"));
     for oobi in serde_json::from_str::<Vec<Oobi>>(&file).unwrap() {
         cont.resolve_oobi(oobi).await.unwrap();
     }

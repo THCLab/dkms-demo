@@ -1,10 +1,11 @@
 use std::{fs::File, io::Write, sync::Arc};
 
+use controller::IdentifierPrefix;
 use keri::actor::prelude::SelfAddressingIdentifier;
 use serde_json::Value;
 
 use crate::{
-    keri::issue,
+    keri::{issue, query_tel},
     utils::{load, load_signer},
     CliError,
 };
@@ -37,7 +38,22 @@ pub async fn handle_issue(alias: &str, data: &str) -> Result<(), CliError> {
     let said: SelfAddressingIdentifier = digest.parse().unwrap();
 
     let signer = Arc::new(load_signer(alias).unwrap());
-    issue(id, said, signer).await.unwrap();
+    issue(&id, said, signer).await.unwrap();
+
+    Ok(())
+}
+
+pub async fn handle_query(alias: &str, said: &str, registry_id: &str, issuer_id: &str) -> Result<(), CliError> {
+    let who_id = load(alias).unwrap();
+    let issuer: IdentifierPrefix = issuer_id.parse().unwrap();
+    let said : SelfAddressingIdentifier = said.parse().unwrap();
+    let registry_id : SelfAddressingIdentifier = registry_id.parse().unwrap();
+
+    
+    let signer = Arc::new(load_signer(alias).unwrap());
+    query_tel(&said, registry_id, &issuer, &who_id, signer).await.unwrap();
+
+    println!("{:?}", who_id.source.tel.get_vc_state(&said).unwrap().unwrap());
 
     Ok(())
 }

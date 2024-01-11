@@ -23,12 +23,12 @@ pub async fn handle_sad(path: PathBuf) -> Result<String, CliError> {
 }
 
 fn insert_said(input: &str) -> Result<String, SaidError> {
-	let mut map: IndexMap<String, String> = serde_json::from_str(input)?;
+	let mut map: IndexMap<String, serde_json::Value> = serde_json::from_str(input)?;
 	if let Some(_dig) = map.get("d") {
 		let code = HashFunctionCode::Blake3_256;
-		map["d"] = "#".repeat(code.full_size());
+		map["d"] = serde_json::Value::String("#".repeat(code.full_size()));
 		let said = HashFunction::from(code).derive(&serde_json::to_vec(&map)?);
-		map["d"] = said.to_string();
+		map["d"] = serde_json::Value::String(said.to_string());
 		Ok(serde_json::to_string(&map)?)
 	} else {
 		Err(SaidError::MissingSaidField)

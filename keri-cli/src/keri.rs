@@ -108,7 +108,7 @@ pub async fn query_mailbox(
     witness_id: &BasicPrefix,
 ) -> Result<Vec<SignedKelQuery>> {
     let mut out = vec![];
-    for (i, qry) in id
+    for (_i, qry) in id
         .query_mailbox(&id.id, &[witness_id.clone()])
         .unwrap()
         .into_iter()
@@ -150,28 +150,27 @@ pub async fn query_messagebox(id: &IdentifierController, km: Arc<CryptoBox>) -> 
 }
 
 pub async fn query_tel(
-    acdc_d: SelfAddressingIdentifier,
+    acdc_d: &SelfAddressingIdentifier,
     registry_id: SelfAddressingIdentifier,
+    issuer_id: &IdentifierPrefix,
     id: &IdentifierController,
-    km: Arc<CryptoBox>,
-    signer_oobi: Oobi,
+    km: Arc<Signer>,
 ) -> Result<()> {
     let qry = id.query_tel(
         IdentifierPrefix::SelfAddressing(registry_id),
-        IdentifierPrefix::SelfAddressing(acdc_d),
+        IdentifierPrefix::SelfAddressing(acdc_d.clone()),
     )?;
     let signature = SelfSigningPrefix::new(
         cesrox::primitives::codes::self_signing::SelfSigning::Ed25519Sha512,
         km.sign(&qry.encode().unwrap())?,
     );
 
-    id.source.resolve_oobi(signer_oobi).await?;
-    id.finalize_tel_query(&id.id, qry, signature).await?;
+    id.finalize_tel_query(issuer_id, qry, signature).await.unwrap();
     Ok(())
 }
 
 pub async fn issue(
-    identifier: IdentifierController,
+    identifier: &IdentifierController,
     cred_said: SelfAddressingIdentifier,
     km: Arc<Signer>,
 ) -> Result<()> {
@@ -200,16 +199,6 @@ pub async fn issue(
     let qry = query_mailbox(&identifier, km.clone(), &witnesses[0]).await?;
 
     identifier.notify_backers().await?;
-
-    // println!("\nkel: {:?}", identifier.get_kel());
-
-    // // Save tel to file
-    // let tel = identifier.source.tel.get_tel(&said)?;
-    // let encoded = tel
-    //     .iter()
-    //     .map(|tel| tel.serialize().unwrap())
-    //     .flatten()
-    //     .collect::<Vec<_>>();
 
     Ok(())
 }

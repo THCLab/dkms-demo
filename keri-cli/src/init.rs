@@ -82,7 +82,7 @@ pub async fn handle_init(alias: String, keys_file: Option<PathBuf>) -> Result<()
     let mut file = File::create(nsk_path).unwrap();
     file.write_all(keys.next.to_str().as_bytes()).unwrap();
 
-    print!("Identifier for alias {} initialized: {}", alias, id.id);
+    print!("\nIdentifier for alias {} initialized: {}", alias, id.id);
 
     // Save identifier
     let mut id_path = store_path.clone();
