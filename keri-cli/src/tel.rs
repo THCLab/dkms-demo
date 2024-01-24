@@ -1,7 +1,7 @@
 use std::{fs::File, io::Write, sync::Arc};
 
-use controller::IdentifierPrefix;
-use keri::actor::prelude::SelfAddressingIdentifier;
+use keri_controller::IdentifierPrefix;
+use keri_core::actor::prelude::SelfAddressingIdentifier;
 use serde_json::Value;
 
 use crate::{

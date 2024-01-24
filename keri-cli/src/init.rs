@@ -6,12 +6,12 @@ use std::{
 };
 
 use config_file::FromConfigFile;
-use controller::{
+use keri_controller::{
     config::ControllerConfig, identifier_controller::IdentifierController, BasicPrefix,
     CesrPrimitive, Controller, LocationScheme, SeedPrefix,
 };
 use ed25519_dalek::SigningKey;
-use keri::signer::Signer;
+use keri_core::signer::Signer;
 use serde::{de, Deserialize};
 
 use crate::{keri::setup_identifier, CliError};
@@ -68,7 +68,7 @@ pub async fn handle_init(alias: String, keys_file: Option<PathBuf>) -> Result<()
     let id = incept(
         db_path,
         keys.current.clone(),
-        controller::BasicPrefix::Ed25519NT(npk),
+        keri_controller::BasicPrefix::Ed25519NT(npk),
         Some(witness_oobi),
         None,
         None,

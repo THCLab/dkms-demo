@@ -4,11 +4,11 @@ use std::{
 };
 
 use anyhow::Result;
-use controller::{
+use keri_controller::{
     config::ControllerConfig, identifier_controller::IdentifierController, Controller,
     IdentifierPrefix, SeedPrefix,
 };
-use keri::signer::Signer;
+use keri_core::signer::Signer;
 use serde_json::json;
 
 use crate::CliError;

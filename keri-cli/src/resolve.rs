@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::PathBuf;
 
-use controller::{identifier_controller::IdentifierController, EndRole, IdentifierPrefix, Oobi};
+use keri_controller::{identifier_controller::IdentifierController, EndRole, IdentifierPrefix, Oobi};
 
 use crate::{
     utils::{load, load_controller},
@@ -68,7 +68,7 @@ pub fn handle_oobi(alias: &str, oobi_command: &Option<OobiRoles>) -> Result<Vec<
             let witnesses_oobi = witnesses.clone().into_iter().map(|cid| {
                 Oobi::EndRole(EndRole {
                     eid: cid.clone(),
-                    role: keri::oobi::Role::Witness,
+                    role: keri_core::oobi::Role::Witness,
                     cid: identifier.id.clone(),
                 })
             });

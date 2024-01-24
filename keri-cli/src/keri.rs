@@ -1,11 +1,11 @@
 use std::{fs, path::PathBuf, sync::Arc};
-
+use keri_controller as controller;
 use anyhow::Result;
 use controller::{
     identifier_controller::IdentifierController, BasicPrefix, Controller, CryptoBox,
     IdentifierPrefix, KeyManager, LocationScheme, Oobi, SelfSigningPrefix,
 };
-use keri::{
+use keri_core::{
     actor::prelude::SelfAddressingIdentifier, prefix::IndexedSignature,
     query::query_event::SignedKelQuery, signer::Signer,
 };

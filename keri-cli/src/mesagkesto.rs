@@ -20,7 +20,7 @@ pub fn handle_exchange(alias: &str, data: &str, receiver_alias: &str) -> Result<
     let signer_id = load(alias).unwrap();
     let signer = load_signer(alias).unwrap();
 
-    let signature = controller::SelfSigningPrefix::Ed25519Sha512(
+    let signature = keri_controller::SelfSigningPrefix::Ed25519Sha512(
         signer
             .sign(exn.to_string().as_bytes())
             .map_err(|_e| MesagkestoError::SigningError)?,
@@ -38,7 +38,7 @@ pub fn handle_pull(alias: &str) -> Result<String, CliError> {
 
     let qry = messagebox::query_by_sn(signer_id.id.to_string(), 0);
 
-    let signature = controller::SelfSigningPrefix::Ed25519Sha512(
+    let signature = keri_controller::SelfSigningPrefix::Ed25519Sha512(
         signer
             .sign(qry.to_string().as_bytes())
             .map_err(|_e| MesagkestoError::SigningError)?,
