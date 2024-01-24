@@ -8,8 +8,8 @@ edition = "2021"
 [dependencies]
 keri = { git = "https://github.com/THCLab/keriox.git", features = ["oobi", "mailbox"]}
 controller = { git = "https://github.com/THCLab/keriox.git" }
-said = { git = "https://github.com/THCLab/cesrox", branch = "macros", features = ["macros"]} 
-cesrox = { git = "https://github.com/THCLab/cesrox", features = ["cesr-proof"], tag = "v0.1.4" }
+said = { version = "0.4.0", features = ["macros"]} 
+cesrox = { version = "0.1.4", features = ["cesr-proof"] }
 anyhow = { version = "1.0" }
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
