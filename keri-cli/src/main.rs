@@ -46,6 +46,8 @@ enum Commands {
         alias: String,
         #[arg(short, long)]
         keys_file: Option<PathBuf>,
+        #[arg(short, long)]
+        config: Option<PathBuf>,
     },
     Tel {
         #[command(subcommand)]
@@ -183,8 +185,8 @@ async fn main() -> Result<(), CliError> {
     // You can check for the existence of subcommands, and if found use their
     // matches just as you would the top level cmd
     match cli.command {
-        Some(Commands::Init { alias, keys_file }) => {
-            handle_init(alias, keys_file).await?;
+        Some(Commands::Init { alias, keys_file, config }) => {
+            handle_init(alias, keys_file, config).await?;
         }
         Some(Commands::Mesagkesto { command }) => match command {
             MesagkestoCommands::Exchange {

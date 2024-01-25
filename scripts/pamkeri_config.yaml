@@ -1,0 +1,5 @@
+witness:
+  eid: BJq7UABlttINuWJh1Xl2lkqZG4NTdUdqnbFJDa6ZyxCC
+  scheme: http
+  url: http://172.17.0.1:3232/
+watcher: null

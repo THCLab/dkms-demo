@@ -1,20 +1,36 @@
 use std::{
     fs::{self, File},
     io::Write,
-    path::PathBuf,
+    path::{Path, PathBuf},
     sync::Arc,
 };
 
 use config_file::FromConfigFile;
+use figment::{providers::{Format, Yaml}, Figment};
 use keri_controller::{
-    config::ControllerConfig, identifier_controller::IdentifierController, BasicPrefix,
-    CesrPrimitive, Controller, LocationScheme, SeedPrefix,
+    config::ControllerConfig, identifier_controller::IdentifierController, BasicPrefix, CesrPrimitive, Controller, LocationScheme, Oobi, SeedPrefix
 };
 use ed25519_dalek::SigningKey;
 use keri_core::signer::Signer;
-use serde::{de, Deserialize};
+use serde::{de, Deserialize, Serialize};
 
 use crate::{keri::setup_identifier, CliError};
+
+#[derive(Deserialize, Serialize, Debug)]
+struct KelConfig {
+    pub witness: Option<LocationScheme>,
+    pub watcher: Option<LocationScheme>,
+}
+
+
+impl Default for KelConfig {
+    fn default() -> Self {
+        let witness_oobi: LocationScheme = serde_json::from_str(r#"{"eid":"BJq7UABlttINuWJh1Xl2lkqZG4NTdUdqnbFJDa6ZyxCC","scheme":"http","url":"http://localhost:3232/"}"#).unwrap();
+
+        Self { witness: Some(witness_oobi), watcher: None }
+    }
+}
+
 
 #[derive(Deserialize)]
 struct KeysConfig {
@@ -45,7 +61,7 @@ where
         .map_err(|e| de::Error::unknown_variant(s, &[]))
 }
 
-pub async fn handle_init(alias: String, keys_file: Option<PathBuf>) -> Result<(), CliError> {
+pub async fn handle_init(alias: String, keys_file: Option<PathBuf>, config_file: Option<PathBuf>) -> Result<(), CliError> {
     // Compute kel database path
     let mut store_path = home::home_dir().unwrap();
     store_path.push(".keri-cli");
@@ -58,20 +74,27 @@ pub async fn handle_init(alias: String, keys_file: Option<PathBuf>) -> Result<()
         Some(file_path) => KeysConfig::from_config_file(file_path)?,
         None => KeysConfig::default(),
     };
+
+    let kel_config = match config_file { 
+        Some(cfgs) => {
+            Figment::new().merge(Yaml::file(cfgs)).extract().unwrap()
+        },
+        None => KelConfig::default(),
+    };
+
     let (npk, _nsk) = keys
         .next
         .derive_key_pair()
         .map_err(|e| CliError::KeysDerivationError)?;
 
-    let witness_oobi: LocationScheme = serde_json::from_str(r#"{"eid":"BJq7UABlttINuWJh1Xl2lkqZG4NTdUdqnbFJDa6ZyxCC","scheme":"http","url":"http://localhost:3232/"}"#).unwrap();
 
     let id = incept(
         db_path,
         keys.current.clone(),
         keri_controller::BasicPrefix::Ed25519NT(npk),
-        Some(witness_oobi),
+        kel_config.witness,
         None,
-        None,
+        kel_config.watcher,
     )
     .await
     .unwrap();

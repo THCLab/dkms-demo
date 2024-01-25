@@ -44,6 +44,7 @@ pub fn load_identifier(alias: &str) -> Result<IdentifierPrefix> {
 
     let identifier: IdentifierPrefix = fs::read_to_string(id_path.clone())
         .expect(&format!("Should have been able to read the file: {}", id_path.to_str().unwrap()))
+        .trim()
         .parse()
         .unwrap();
     Ok(identifier)
