@@ -23,16 +23,25 @@ keri-cli tel issue -a alice -c "$ACDC"
 
 echo "\nACDC issued: $ACDC"
 
-ALICE_OOBI=$(keri-cli oobi get -a alice) 
-OOBI1=$(echo "$ALICE_OOBI" | jq -c '.[0]') 
-OOBI2=$(echo "$ALICE_OOBI" | jq -c '.[1]')
+# Bob sign acdc and send it to mesagkesto
+SIGNED_ACDC=$(keri-cli sign -a bob -d "$ACDC")
+echo $SIGNED_ACDC
 
-EXN=$(keri-cli mesagkesto exchange -a alice -r mach -c "$OOBI2$ACDC")
+BOB_OOBI=$(keri-cli oobi get -a bob) 
+BOB_OOBI1=$(echo "$BOB_OOBI" | jq -c '.[0]') 
+BOB_OOBI2=$(echo "$BOB_OOBI" | jq -c '.[1]')
+
+
+ALICE_OOBI=$(keri-cli oobi get -a alice) 
+ALICE_OOBI1=$(echo "$ALICE_OOBI" | jq -c '.[0]') 
+ALICE_OOBI2=$(echo "$ALICE_OOBI" | jq -c '.[1]')
+
+EXN=$(keri-cli mesagkesto exchange -a bob -r mach -c "$ALICE_OOBI2$BOB_OOBI2$SIGNED_ACDC")
 echo "\n exn: $EXN"
 
 # # echo $OOBI2 > aliceoobi.json
 
-curl -XPOST -d $(echo $OOBI1) "$MESAGKESTO_ADDRESS"/resolve 
-curl -XPOST -d $(echo $OOBI2) "$MESAGKESTO_ADDRESS"/resolve
+curl -XPOST -d $(echo $BOB_OOBI1) "$MESAGKESTO_ADDRESS"/resolve 
+curl -XPOST -d $(echo $BOB_OOBI2) "$MESAGKESTO_ADDRESS"/resolve
 
 curl -XPOST -d $(echo $EXN) "$MESAGKESTO_ADDRESS"
