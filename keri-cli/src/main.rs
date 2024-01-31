@@ -6,6 +6,7 @@ use init::handle_init;
 use mesagkesto::MesagkestoError;
 use resolve::handle_resolve;
 use said::SaidError;
+use sign::handle_sign;
 use tel::{handle_issue, handle_query};
 use thiserror::Error;
 use utils::handle_info;
@@ -16,8 +17,9 @@ mod init;
 mod keri;
 mod mesagkesto;
 mod resolve;
-mod tel;
 mod said;
+mod sign;
+mod tel;
 mod utils;
 
 #[derive(Parser)]
@@ -69,7 +71,13 @@ enum Commands {
     Info {
         #[arg(short, long)]
         alias: String,
-    }
+    },
+    Sign {
+        #[arg(short, long)]
+        alias: String,
+        #[arg(short, long)]
+        data: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -108,7 +116,7 @@ pub enum TelCommands {
         #[arg(short, long)]
         registry_id: String,
         #[arg(short, long)]
-        said: String, 
+        said: String,
     },
 }
 
@@ -157,7 +165,7 @@ pub enum CliError {
     #[error(transparent)]
     MesagkestoError(#[from] MesagkestoError),
     #[error("Said error: {0}")]
-    SaidError(#[from] SaidError)
+    SaidError(#[from] SaidError),
 }
 
 #[tokio::main]
@@ -185,7 +193,11 @@ async fn main() -> Result<(), CliError> {
     // You can check for the existence of subcommands, and if found use their
     // matches just as you would the top level cmd
     match cli.command {
-        Some(Commands::Init { alias, keys_file, config }) => {
+        Some(Commands::Init {
+            alias,
+            keys_file,
+            config,
+        }) => {
             handle_init(alias, keys_file, config).await?;
         }
         Some(Commands::Mesagkesto { command }) => match command {
@@ -221,20 +233,27 @@ async fn main() -> Result<(), CliError> {
             } => {
                 handle_issue(&alias, &credential_json).await?;
             }
-            TelCommands::Query { alias, issuer_id, registry_id, said } => {
+            TelCommands::Query {
+                alias,
+                issuer_id,
+                registry_id,
+                said,
+            } => {
                 handle_query(&alias, &said, &registry_id, &issuer_id).await?;
             }
         },
-        Some(Commands::Said { command }) =>
-            match command {
-                SaidCommands::SAD { file } => {
-                    let sad = handle_sad(file).await?;
-                    println!("{}", sad);
-                },
+        Some(Commands::Said { command }) => match command {
+            SaidCommands::SAD { file } => {
+                let sad = handle_sad(file).await?;
+                println!("{}", sad);
+            }
         },
         Some(Commands::Info { alias }) => {
             handle_info(&alias)?;
-        },
+        }
+        Some(Commands::Sign { alias, data }) => {
+            println!("{}", handle_sign(alias, &data)?);
+        }
         None => {}
     }
     Ok(())

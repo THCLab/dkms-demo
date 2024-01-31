@@ -1,14 +1,14 @@
-use std::{fs, path::PathBuf, sync::Arc};
-use keri_controller as controller;
 use anyhow::Result;
 use controller::{
     identifier_controller::IdentifierController, BasicPrefix, Controller, CryptoBox,
     IdentifierPrefix, KeyManager, LocationScheme, Oobi, SelfSigningPrefix,
 };
+use keri_controller as controller;
 use keri_core::{
     actor::prelude::SelfAddressingIdentifier, prefix::IndexedSignature,
     query::query_event::SignedKelQuery, signer::Signer,
 };
+use std::{fs, path::PathBuf, sync::Arc};
 
 pub async fn add_watcher(
     id: &IdentifierController,
@@ -165,7 +165,9 @@ pub async fn query_tel(
         km.sign(&qry.encode().unwrap())?,
     );
 
-    id.finalize_tel_query(issuer_id, qry, signature).await.unwrap();
+    id.finalize_tel_query(issuer_id, qry, signature)
+        .await
+        .unwrap();
     Ok(())
 }
 

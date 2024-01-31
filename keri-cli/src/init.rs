@@ -6,11 +6,15 @@ use std::{
 };
 
 use config_file::FromConfigFile;
-use figment::{providers::{Format, Yaml}, Figment};
-use keri_controller::{
-    config::ControllerConfig, identifier_controller::IdentifierController, BasicPrefix, CesrPrimitive, Controller, LocationScheme, Oobi, SeedPrefix
-};
 use ed25519_dalek::SigningKey;
+use figment::{
+    providers::{Format, Yaml},
+    Figment,
+};
+use keri_controller::{
+    config::ControllerConfig, identifier_controller::IdentifierController, BasicPrefix,
+    CesrPrimitive, Controller, LocationScheme, Oobi, SeedPrefix,
+};
 use keri_core::signer::Signer;
 use serde::{de, Deserialize, Serialize};
 
@@ -22,15 +26,16 @@ struct KelConfig {
     pub watcher: Option<LocationScheme>,
 }
 
-
 impl Default for KelConfig {
     fn default() -> Self {
         let witness_oobi: LocationScheme = serde_json::from_str(r#"{"eid":"BJq7UABlttINuWJh1Xl2lkqZG4NTdUdqnbFJDa6ZyxCC","scheme":"http","url":"http://localhost:3232/"}"#).unwrap();
 
-        Self { witness: Some(witness_oobi), watcher: None }
+        Self {
+            witness: Some(witness_oobi),
+            watcher: None,
+        }
     }
 }
-
 
 #[derive(Deserialize)]
 struct KeysConfig {
@@ -61,7 +66,11 @@ where
         .map_err(|e| de::Error::unknown_variant(s, &[]))
 }
 
-pub async fn handle_init(alias: String, keys_file: Option<PathBuf>, config_file: Option<PathBuf>) -> Result<(), CliError> {
+pub async fn handle_init(
+    alias: String,
+    keys_file: Option<PathBuf>,
+    config_file: Option<PathBuf>,
+) -> Result<(), CliError> {
     // Compute kel database path
     let mut store_path = home::home_dir().unwrap();
     store_path.push(".keri-cli");
@@ -75,10 +84,8 @@ pub async fn handle_init(alias: String, keys_file: Option<PathBuf>, config_file:
         None => KeysConfig::default(),
     };
 
-    let kel_config = match config_file { 
-        Some(cfgs) => {
-            Figment::new().merge(Yaml::file(cfgs)).extract().unwrap()
-        },
+    let kel_config = match config_file {
+        Some(cfgs) => Figment::new().merge(Yaml::file(cfgs)).extract().unwrap(),
         None => KelConfig::default(),
     };
 
@@ -86,7 +93,6 @@ pub async fn handle_init(alias: String, keys_file: Option<PathBuf>, config_file:
         .next
         .derive_key_pair()
         .map_err(|e| CliError::KeysDerivationError)?;
-
 
     let id = incept(
         db_path,

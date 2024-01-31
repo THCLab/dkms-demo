@@ -30,7 +30,7 @@ pub fn load(alias: &str) -> Result<IdentifierController> {
         Ok(reg) => reg.parse().ok(),
         Err(_) => None,
     };
-    
+
     let cont = Arc::new(load_controller(&alias).unwrap());
     Ok(IdentifierController::new(identifier, cont, registry_id))
 }
@@ -43,7 +43,10 @@ pub fn load_identifier(alias: &str) -> Result<IdentifierPrefix> {
     id_path.push("id");
 
     let identifier: IdentifierPrefix = fs::read_to_string(id_path.clone())
-        .expect(&format!("Should have been able to read the file: {}", id_path.to_str().unwrap()))
+        .expect(&format!(
+            "Should have been able to read the file: {}",
+            id_path.to_str().unwrap()
+        ))
         .trim()
         .parse()
         .unwrap();
@@ -78,12 +81,12 @@ pub fn load_signer(alias: &str) -> Result<Signer> {
 
 pub fn handle_info(alias: &str) -> Result<(), CliError> {
     let cont = load(alias).unwrap();
-	let info = if let Some(reg) = cont.registry_id {
-		json!({"id": cont.id, "registry": reg})
-	} else {
-		json!({"id": cont.id})
-	};
-	println!("{}", serde_json::to_string(&info).unwrap());
-	
+    let info = if let Some(reg) = cont.registry_id {
+        json!({"id": cont.id, "registry": reg})
+    } else {
+        json!({"id": cont.id})
+    };
+    println!("{}", serde_json::to_string(&info).unwrap());
+
     Ok(())
 }

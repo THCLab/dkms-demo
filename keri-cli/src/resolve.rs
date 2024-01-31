@@ -1,7 +1,9 @@
 use std::fs;
 use std::path::PathBuf;
 
-use keri_controller::{identifier_controller::IdentifierController, EndRole, IdentifierPrefix, Oobi};
+use keri_controller::{
+    identifier_controller::IdentifierController, EndRole, IdentifierPrefix, Oobi,
+};
 
 use crate::{
     utils::{load, load_controller},

@@ -4,12 +4,15 @@ MESAGKESTO_ADDRESS="http://172.17.0.1:3236"
 keri-cli init -a alice -c "./scripts/pamkeri_config.yaml"
 keri-cli tel incept -a alice
 
+keri-cli init -a bob -c "./scripts/pamkeri_config.yaml"
+BOB_INFO=$(keri-cli info -a bob)
+BOB_ID=$(echo $BOB_INFO | jq '.id' | tr -d '"')
 
 INFO=$(keri-cli info -a alice)
 ALICE_ID=$(echo $INFO | jq '.id' | tr -d '"')
 REGISTRY_ID=$(echo $INFO | jq '.registry' | tr -d '"')
 
-TMP_ACDC='{"v":"ACDC10JSON000133_","d":"EG9kClwtClse9J7eaQgByM7prbx1NDmEdqHT-HgCeSpf","i":"'$ALICE_ID'","ri":"'$REGISTRY_ID'","s":"EPtdQc35vLxszRMw3-uyBg3JY0_7uQ0xqZlkCfD0VSB5","a":{"d":"EHuwAoa8v25gJHrGntWyoKd4h_VAOzLaT4R8OaLtEInE","a":{"passed":true}}}'
+TMP_ACDC='{"v":"ACDC10JSON000133_","d":"EG9kClwtClse9J7eaQgByM7prbx1NDmEdqHT-HgCeSpf","i":"'$ALICE_ID'","ri":"'$REGISTRY_ID'","s":"EPtdQc35vLxszRMw3-uyBg3JY0_7uQ0xqZlkCfD0VSB5","a":{"i":"'$BOB_ID'","d":"EHuwAoa8v25gJHrGntWyoKd4h_VAOzLaT4R8OaLtEInE","a":{"passed":true}}}'
 
 echo $TMP_ACDC > tmp_acdc.json
 # Compute digest od ACDC
