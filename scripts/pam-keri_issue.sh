@@ -12,7 +12,9 @@ INFO=$(keri-cli info -a alice)
 ALICE_ID=$(echo $INFO | jq '.id' | tr -d '"')
 REGISTRY_ID=$(echo $INFO | jq '.registry' | tr -d '"')
 
-TMP_ACDC='{"v":"ACDC10JSON000133_","d":"EG9kClwtClse9J7eaQgByM7prbx1NDmEdqHT-HgCeSpf","i":"'$ALICE_ID'","ri":"'$REGISTRY_ID'","s":"EPtdQc35vLxszRMw3-uyBg3JY0_7uQ0xqZlkCfD0VSB5","a":{"i":"'$BOB_ID'","d":"EHuwAoa8v25gJHrGntWyoKd4h_VAOzLaT4R8OaLtEInE","a":{"passed":true}}}'
+MACHINE_ID="BCjxOXniUc5EUzDqERlXdptfKPHy6jNo_ZGsS4Vd8fAE"
+
+TMP_ACDC='{"v":"ACDC10JSON000133_","d":"EG9kClwtClse9J7eaQgByM7prbx1NDmEdqHT-HgCeSpf","i":"'$ALICE_ID'","ri":"'$REGISTRY_ID'","s":"EPtdQc35vLxszRMw3-uyBg3JY0_7uQ0xqZlkCfD0VSB5","a":{"i":"'$BOB_ID'","d":"EHuwAoa8v25gJHrGntWyoKd4h_VAOzLaT4R8OaLtEInE","a":{"passed":true,"mi":"'$MACHINE_ID'"}}}'
 
 echo $TMP_ACDC > tmp_acdc.json
 # Compute digest od ACDC
