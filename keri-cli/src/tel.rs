@@ -18,7 +18,7 @@ pub async fn handle_tel_incept(alias: &str) -> Result<(), CliError> {
     // Save registry identifier
     let mut store_path = home::home_dir().unwrap();
     store_path.push(".keri-cli");
-    store_path.push(&alias);
+    store_path.push(alias);
 
     let mut reg_path = store_path.clone();
     reg_path.push("reg_id");

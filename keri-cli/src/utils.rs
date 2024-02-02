@@ -1,7 +1,4 @@
-use std::{
-    fs::{self, File},
-    sync::Arc,
-};
+use std::{fs, sync::Arc};
 
 use anyhow::Result;
 use keri_controller::{
@@ -31,7 +28,7 @@ pub fn load(alias: &str) -> Result<IdentifierController> {
         Err(_) => None,
     };
 
-    let cont = Arc::new(load_controller(&alias).unwrap());
+    let cont = Arc::new(load_controller(alias).unwrap());
     Ok(IdentifierController::new(identifier, cont, registry_id))
 }
 
@@ -43,10 +40,7 @@ pub fn load_identifier(alias: &str) -> Result<IdentifierPrefix> {
     id_path.push("id");
 
     let identifier: IdentifierPrefix = fs::read_to_string(id_path.clone())
-        .expect(&format!(
-            "Should have been able to read the file: {}",
-            id_path.to_str().unwrap()
-        ))
+        .unwrap_or_else(|_| panic!("Should have been able to read the file: {}", id_path.to_str().unwrap())) 
         .trim()
         .parse()
         .unwrap();

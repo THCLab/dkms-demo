@@ -1,7 +1,7 @@
 use std::{
     fs::{self, File},
     io::Write,
-    path::{Path, PathBuf},
+    path::PathBuf,
     sync::Arc,
 };
 
@@ -13,7 +13,7 @@ use figment::{
 };
 use keri_controller::{
     config::ControllerConfig, identifier_controller::IdentifierController, BasicPrefix,
-    CesrPrimitive, Controller, LocationScheme, Oobi, SeedPrefix,
+    CesrPrimitive, Controller, LocationScheme, SeedPrefix,
 };
 use keri_core::signer::Signer;
 use serde::{de, Deserialize, Serialize};
@@ -63,7 +63,7 @@ where
     let s: &str = de::Deserialize::deserialize(deserializer)?;
 
     s.parse::<SeedPrefix>()
-        .map_err(|e| de::Error::unknown_variant(s, &[]))
+        .map_err(|_e| de::Error::unknown_variant(s, &[]))
 }
 
 pub async fn handle_init(
@@ -85,16 +85,17 @@ pub async fn handle_init(
     };
 
     let kel_config = match config_file {
-        Some(cfgs) => Figment::new().merge(Yaml::file(cfgs.clone()))
+        Some(cfgs) => Figment::new()
+            .merge(Yaml::file(cfgs.clone()))
             .extract()
-            .expect(&format!("Can't read file from path: {:?}", cfgs.to_str())),
+            .unwrap_or_else(|_| panic!("Can't read file from path: {:?}", cfgs.to_str())),
         None => KelConfig::default(),
     };
 
     let (npk, _nsk) = keys
         .next
         .derive_key_pair()
-        .map_err(|e| CliError::KeysDerivationError)?;
+        .map_err(|_e| CliError::KeysDerivationError)?;
 
     let id = incept(
         db_path,
@@ -119,7 +120,7 @@ pub async fn handle_init(
     let mut id_path = store_path.clone();
     id_path.push("id");
     let mut file = File::create(id_path)?;
-    file.write_all(&id.id.to_string().as_bytes())?;
+    file.write_all(id.id.to_string().as_bytes())?;
 
     // Save private key
     let mut priv_key_path = store_path.clone();
@@ -139,7 +140,7 @@ async fn incept(
     watcher: Option<LocationScheme>,
 ) -> anyhow::Result<IdentifierController> {
     let cont = Arc::new(Controller::new(ControllerConfig {
-        db_path: db_path.clone().into(),
+        db_path,
         ..ControllerConfig::default()
     })?);
     let signer = Arc::new(Signer::new_with_seed(&priv_key)?);
