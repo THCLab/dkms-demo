@@ -1,10 +1,7 @@
 alias keri-cli="./target/release/keri-cli"
 MESAGKESTO_ADDRESS="http://172.17.0.1:3236"
 
-keri-cli init -a alice -c "./scripts/pamkeri_config.yaml"
-keri-cli tel incept -a alice
-
-keri-cli init -a bob -c "./scripts/pamkeri_config.yaml"
+keri-cli init -a bob -c "./scripts/pamkeri/pamkeri_config.yaml"
 BOB_INFO=$(keri-cli info -a bob)
 BOB_ID=$(echo $BOB_INFO | jq '.id' | tr -d '"')
 

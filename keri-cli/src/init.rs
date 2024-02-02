@@ -85,7 +85,9 @@ pub async fn handle_init(
     };
 
     let kel_config = match config_file {
-        Some(cfgs) => Figment::new().merge(Yaml::file(cfgs)).extract().unwrap(),
+        Some(cfgs) => Figment::new().merge(Yaml::file(cfgs.clone()))
+            .extract()
+            .expect(&format!("Can't read file from path: {:?}", cfgs.to_str())),
         None => KelConfig::default(),
     };
 

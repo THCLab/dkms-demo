@@ -79,6 +79,13 @@ pub async fn setup_identifier(
         add_watcher(&id, signer, &watcher_oobi).await?;
     };
 
+    // Send witness oobi to watcher.
+    id
+        .source
+        .send_oobi_to_watcher(&id.id, &Oobi::Location(witness))
+        .await
+        .unwrap();
+
     Ok(id)
 }
 
