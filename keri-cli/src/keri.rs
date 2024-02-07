@@ -176,6 +176,19 @@ pub async fn query_tel(
     Ok(())
 }
 
+pub async fn query_kel(
+    about_who: &IdentifierPrefix,
+    id: &IdentifierController,
+    km: Arc<Signer>,
+) -> Result<()> {
+    for qry in id.query_own_watchers(about_who)? {
+        let signature = SelfSigningPrefix::Ed25519Sha512(km.sign(&qry.encode()?)?);
+        id.finalize_query(vec![(qry, signature)]).await?;
+    };
+    Ok(())
+}
+
+
 pub async fn issue(
     identifier: &IdentifierController,
     cred_said: SelfAddressingIdentifier,

@@ -3,6 +3,8 @@ use std::path::PathBuf;
 use clap::{Parser, Subcommand};
 use config_file::ConfigFileError;
 use init::handle_init;
+use kel::handle_kel_query;
+use keri_controller::IdentifierPrefix;
 use mesagkesto::MesagkestoError;
 use resolve::handle_resolve;
 use said::SaidError;
@@ -20,6 +22,7 @@ mod resolve;
 mod said;
 mod sign;
 mod tel;
+mod kel;
 mod utils;
 
 #[derive(Parser)]
@@ -50,6 +53,10 @@ enum Commands {
         keys_file: Option<PathBuf>,
         #[arg(short, long)]
         config: Option<PathBuf>,
+    },
+    Kel {
+        #[command(subcommand)]
+        command: KelCommands,
     },
     Tel {
         #[command(subcommand)]
@@ -117,6 +124,16 @@ pub enum TelCommands {
         registry_id: String,
         #[arg(short, long)]
         said: String,
+    },
+}
+
+#[derive(Subcommand)]
+pub enum KelCommands {
+    Query {
+        #[arg(short, long)]
+        alias: String,
+        #[arg(short, long)]
+        identifier: String,
     },
 }
 
@@ -200,6 +217,14 @@ async fn main() -> Result<(), CliError> {
         }) => {
             handle_init(alias, keys_file, config).await?;
         }
+        Some(Commands::Kel { command }) => {
+            match command {
+                KelCommands::Query { alias, identifier } => {
+                    let identifier: IdentifierPrefix = identifier.parse().unwrap();
+                    handle_kel_query(&alias, &identifier).await.unwrap();
+                },
+            }
+        },
         Some(Commands::Mesagkesto { command }) => match command {
             MesagkestoCommands::Exchange {
                 content,
