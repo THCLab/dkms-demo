@@ -1,7 +1,6 @@
 use anyhow::Result;
 use controller::{
-    identifier_controller::IdentifierController, BasicPrefix, Controller, CryptoBox,
-    IdentifierPrefix, KeyManager, LocationScheme, Oobi, SelfSigningPrefix,
+    identifier_controller::IdentifierController, BasicPrefix, Controller, CryptoBox, IdentifierPrefix, KeyManager, LocationScheme, Oobi, SeedPrefix, SelfSigningPrefix
 };
 use keri_controller as controller;
 use keri_core::{
@@ -185,6 +184,31 @@ pub async fn query_kel(
         let signature = SelfSigningPrefix::Ed25519Sha512(km.sign(&qry.encode()?)?);
         id.finalize_query(vec![(qry, signature)]).await?;
     };
+    Ok(())
+}
+
+
+pub async fn rotate(
+    id: &IdentifierController,
+    current_signer: Arc<Signer>,
+    new_next_keys: Vec<BasicPrefix>,
+) -> Result<()> {
+    let current_keys_prefix = vec![BasicPrefix::Ed25519NT(current_signer.public_key())];
+    let rotation = id.rotate(current_keys_prefix, new_next_keys, vec![], vec![], 1).await?;
+    let signature = SelfSigningPrefix::new(
+        cesrox::primitives::codes::self_signing::SelfSigning::Ed25519Sha512,
+        current_signer.sign(rotation.as_bytes())?,
+    );
+    id.finalize_event(rotation.as_bytes(), signature).await?;
+
+    id.notify_witnesses().await?;
+
+    let state = id.source.get_state(&id.id).unwrap();
+    // TODO
+    let witnesses = state.witness_config.witnesses[0].clone();
+
+    let _queries = query_mailbox(&id, current_signer.clone(), &witnesses).await?;
+
     Ok(())
 }
 

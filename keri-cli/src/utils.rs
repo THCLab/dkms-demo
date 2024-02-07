@@ -73,6 +73,18 @@ pub fn load_signer(alias: &str) -> Result<Signer> {
     Ok(signer)
 }
 
+pub fn load_next_signer(alias: &str) -> Result<Signer> {
+    let mut path = home::home_dir().unwrap();
+    path.push(".keri-cli");
+    path.push(alias);
+    path.push("next_priv_key");
+    let sk_str = fs::read_to_string(path).expect("Should have been able to read the file");
+    let seed: SeedPrefix = sk_str.parse().unwrap();
+    let signer = Signer::new_with_seed(&seed).unwrap();
+
+    Ok(signer)
+}
+
 pub fn handle_info(alias: &str) -> Result<(), CliError> {
     let cont = load(alias).unwrap();
     let info = if let Some(reg) = cont.registry_id {

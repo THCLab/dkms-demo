@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use clap::{Parser, Subcommand};
 use config_file::ConfigFileError;
 use init::handle_init;
-use kel::handle_kel_query;
+use kel::{handle_kel_query, handle_rotate};
 use keri_controller::IdentifierPrefix;
 use mesagkesto::MesagkestoError;
 use resolve::handle_resolve;
@@ -129,6 +129,10 @@ pub enum TelCommands {
 
 #[derive(Subcommand)]
 pub enum KelCommands {
+    Rotate {
+        #[arg(short, long)]
+        alias: String,
+    },
     Query {
         #[arg(short, long)]
         alias: String,
@@ -222,6 +226,9 @@ async fn main() -> Result<(), CliError> {
                 KelCommands::Query { alias, identifier } => {
                     let identifier: IdentifierPrefix = identifier.parse().unwrap();
                     handle_kel_query(&alias, &identifier).await.unwrap();
+                },
+                KelCommands::Rotate { alias } => {
+                   handle_rotate(&alias).await.unwrap();
                 },
             }
         },
