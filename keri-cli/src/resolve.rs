@@ -6,20 +6,25 @@ use keri_controller::{
 };
 
 use crate::{
-    utils::{load, load_controller},
+    keri::KeriError,
+    utils::load,
     CliError, OobiRoles,
 };
 
 pub async fn handle_resolve(alias: &str, path: PathBuf) -> Result<(), CliError> {
-    let id_cont = load(alias).unwrap();
+    let id_cont = load(alias)?;
     let file = fs::read_to_string(path).expect("Should have been able to read the file");
     for oobi in serde_json::from_str::<Vec<Oobi>>(&file).unwrap() {
-        id_cont.source.resolve_oobi(oobi.clone()).await.unwrap();
+        id_cont
+            .source
+            .resolve_oobi(oobi.clone())
+            .await
+            .map_err(KeriError::ControllerError)?;
         id_cont
             .source
             .send_oobi_to_watcher(&id_cont.id, &oobi)
             .await
-            .unwrap();
+            .map_err(KeriError::ControllerError)?;
     }
     Ok(())
 }
@@ -29,7 +34,7 @@ pub fn witnesses(identifier: &IdentifierController) -> Result<Vec<IdentifierPref
     Ok(identifier
         .source
         .get_state(&identifier.id)
-        .unwrap()
+        .map_err(KeriError::ControllerError)?
         .witness_config
         .witnesses
         .into_iter()
@@ -39,7 +44,10 @@ pub fn witnesses(identifier: &IdentifierController) -> Result<Vec<IdentifierPref
 
 /// Returns watchers' identifiers of alias
 pub fn watcher(identifier: &IdentifierController) -> Result<Vec<IdentifierPrefix>, CliError> {
-    let watchers = identifier.source.get_watchers(&identifier.id).unwrap();
+    let watchers = identifier
+        .source
+        .get_watchers(&identifier.id)
+        .map_err(KeriError::ControllerError)?;
     Ok(watchers)
 }
 
@@ -48,7 +56,7 @@ pub fn mesagkesto(identifeir: &IdentifierController) -> Result<Vec<IdentifierPre
     let msgbox = identifeir
         .source
         .get_messagebox_end_role(&identifeir.id)
-        .unwrap()
+        .map_err(KeriError::ControllerError)?
         .into_iter()
         .map(|b| b.eid)
         .collect();
@@ -56,7 +64,7 @@ pub fn mesagkesto(identifeir: &IdentifierController) -> Result<Vec<IdentifierPre
 }
 
 pub fn handle_oobi(alias: &str, oobi_command: &Option<OobiRoles>) -> Result<Vec<Oobi>, CliError> {
-    let identifier = load(alias).unwrap();
+    let identifier = load(alias)?;
     let filter_locations = |identifiers: Vec<IdentifierPrefix>| -> Result<Vec<Oobi>, CliError> {
         Ok(identifiers
             .into_iter()

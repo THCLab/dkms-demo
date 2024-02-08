@@ -5,7 +5,7 @@ use std::{
     sync::Arc,
 };
 
-use crate::init;
+use crate::{init, keri::KeriError, utils::load_homedir};
 use ed25519_dalek::SigningKey;
 use figment::{
     providers::{Format, Yaml},
@@ -43,13 +43,23 @@ impl Default for RotationConfig {
     }
 }
 
-pub async fn handle_kel_query(alias: &str, about_who: &IdentifierPrefix) -> Result<String, CliError> {
-    let id = load(alias).unwrap();
-    let signer = Arc::new(load_signer(alias).unwrap());
+pub async fn handle_kel_query(
+    alias: &str,
+    about_who: &IdentifierPrefix,
+) -> Result<String, CliError> {
+    let id = load(alias)?;
+    let signer = Arc::new(load_signer(alias)?);
 
-    query_kel(about_who, &id, signer).await.map_err(|e| CliError::NotReady(e.to_string()))?;
-    let kel = id.source.storage.get_kel(about_who).unwrap();
-    kel.map(|kel| String::from_utf8(kel).unwrap()).ok_or(CliError::UnknownIdentifier(about_who.to_str()))
+    query_kel(about_who, &id, signer)
+        .await
+        .map_err(|e| CliError::NotReady(e.to_string()))?;
+    let kel = id
+        .source
+        .storage
+        .get_kel(about_who)
+        .map_err(KeriError::KeriError)?;
+    kel.map(|kel| String::from_utf8(kel).unwrap())
+        .ok_or(CliError::UnknownIdentifier(about_who.to_str()))
 }
 
 pub async fn handle_rotate(alias: &str, config_path: Option<PathBuf>) -> Result<(), CliError> {
@@ -61,11 +71,14 @@ pub async fn handle_rotate(alias: &str, config_path: Option<PathBuf>) -> Result<
         None => RotationConfig::default(),
     };
 
-    let id = load(alias).unwrap();
+    let id = load(alias)?;
     // Load next keys as current
-    let current_signer = Arc::new(load_next_signer(alias).unwrap());
+    let current_signer = Arc::new(load_next_signer(alias)?);
 
-    let (npk, _nsk) = rotation_config.new_next_seed.derive_key_pair().unwrap();
+    let (npk, _nsk) = rotation_config
+        .new_next_seed
+        .derive_key_pair()
+        .map_err(|_e| CliError::KeysDerivationError)?;
     let next_bp = BasicPrefix::Ed25519NT(npk);
 
     // Rotate keys
@@ -78,13 +91,12 @@ pub async fn handle_rotate(alias: &str, config_path: Option<PathBuf>) -> Result<
         rotation_config.witness_to_remove,
         rotation_config.witness_threshold,
     )
-    .await
-    .unwrap();
+    .await?;
 
     print!("\nKeys rotated for alias {} ({})", alias, id.id);
 
     // Save new settings in file
-    let mut store_path = home::home_dir().unwrap();
+    let mut store_path = load_homedir()?;
     store_path.push(".keri-cli");
     store_path.push(&alias);
 
@@ -94,12 +106,11 @@ pub async fn handle_rotate(alias: &str, config_path: Option<PathBuf>) -> Result<
     let mut priv_key_path = store_path.clone();
     priv_key_path.push("priv_key");
 
-    fs::copy(&nsk_path, priv_key_path).unwrap();
+    fs::copy(&nsk_path, priv_key_path)?;
 
     // Save new next key
-    let mut file = File::create(nsk_path).unwrap();
-    file.write_all(rotation_config.new_next_seed.to_str().as_bytes())
-        .unwrap();
+    let mut file = File::create(nsk_path)?;
+    file.write_all(rotation_config.new_next_seed.to_str().as_bytes())?;
 
     Ok(())
 }
@@ -108,12 +119,12 @@ pub async fn handle_get_kel(
     alias: &str,
     about_who: &IdentifierPrefix,
 ) -> Result<Option<String>, CliError> {
-    let id = load(alias).unwrap();
+    let id = load(alias)?;
 
     Ok(id
         .source
         .storage
         .get_kel(&about_who)
-        .unwrap()
+        .map_err(KeriError::KeriError)?
         .map(|v| String::from_utf8(v).unwrap()))
 }

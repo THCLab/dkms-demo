@@ -4,6 +4,7 @@ use clap::{Parser, Subcommand};
 use config_file::ConfigFileError;
 use init::handle_init;
 use kel::{handle_get_kel, handle_kel_query, handle_rotate};
+use keri::KeriError;
 use keri_controller::IdentifierPrefix;
 use mesagkesto::MesagkestoError;
 use resolve::handle_resolve;
@@ -11,7 +12,7 @@ use said::SaidError;
 use sign::handle_sign;
 use tel::{handle_issue, handle_query};
 use thiserror::Error;
-use utils::handle_info;
+use utils::{handle_info, LoadingError};
 
 use crate::said::handle_sad;
 
@@ -189,6 +190,8 @@ pub enum CliError {
     KeysDerivationError,
     #[error(transparent)]
     FileError(#[from] std::io::Error),
+    #[error("Path error: {0}")]
+    PathError(String),
     #[error("Missing digest field")]
     MissingDigest,
     #[error(transparent)]
@@ -199,6 +202,10 @@ pub enum CliError {
     NotReady(String),
     #[error("Unknown identifier: {0}")]
     UnknownIdentifier(String),
+    #[error(transparent)]
+    KeriError(#[from] KeriError),
+    #[error(transparent)]
+    LoadingError(#[from] LoadingError),
 }
 
 #[tokio::main]
@@ -240,10 +247,9 @@ async fn main() -> Result<(), CliError> {
                     Ok(kel) => {
                         println!("KEL updated");
                         println!("{}", kel);
-                    },
+                    }
                     Err(_) => println!("Kel not ready yet"),
                 }
-
             }
             KelCommands::Rotate {
                 alias,

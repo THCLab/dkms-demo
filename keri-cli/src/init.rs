@@ -8,8 +8,7 @@ use std::{
 use config_file::FromConfigFile;
 use ed25519_dalek::SigningKey;
 use figment::{
-    providers::{Format, Yaml},
-    Figment,
+    providers::{Format, Yaml}, Figment
 };
 use keri_controller::{
     config::ControllerConfig, identifier_controller::IdentifierController, BasicPrefix,
@@ -18,7 +17,9 @@ use keri_controller::{
 use keri_core::signer::Signer;
 use serde::{de, Deserialize, Serialize};
 
-use crate::{keri::setup_identifier, CliError};
+use crate::{
+    keri::{setup_identifier, KeriError}, utils, CliError
+};
 
 #[derive(Deserialize, Serialize, Debug)]
 struct KelConfig {
@@ -72,10 +73,10 @@ pub async fn handle_init(
     config_file: Option<PathBuf>,
 ) -> Result<(), CliError> {
     // Compute kel database path
-    let mut store_path = home::home_dir().unwrap();
+    let mut store_path = utils::load_homedir()?;
     store_path.push(".keri-cli");
     store_path.push(&alias);
-    fs::create_dir_all(&store_path).unwrap();
+    fs::create_dir_all(&store_path)?;
     let mut db_path = store_path.clone();
     db_path.push("db");
 
@@ -88,7 +89,7 @@ pub async fn handle_init(
         Some(cfgs) => Figment::new()
             .merge(Yaml::file(cfgs.clone()))
             .extract()
-            .unwrap_or_else(|_| panic!("Can't read file from path: {:?}", cfgs.to_str())),
+            .map_err(|e| CliError::PathError(e.to_string()))?,
         None => KelConfig::default(),
     };
 
@@ -105,14 +106,13 @@ pub async fn handle_init(
         None,
         kel_config.watcher,
     )
-    .await
-    .unwrap();
+    .await?;
 
     // Save next keys seed
     let mut nsk_path = store_path.clone();
     nsk_path.push("next_priv_key");
-    let mut file = File::create(nsk_path).unwrap();
-    file.write_all(keys.next.to_str().as_bytes()).unwrap();
+    let mut file = File::create(nsk_path)?;
+    file.write_all(keys.next.to_str().as_bytes())?;
 
     print!("\nIdentifier for alias {} initialized: {}", alias, id.id);
 
@@ -138,7 +138,7 @@ async fn incept(
     witness: Option<LocationScheme>,
     messagebox: Option<LocationScheme>,
     watcher: Option<LocationScheme>,
-) -> anyhow::Result<IdentifierController> {
+) -> Result<IdentifierController, KeriError> {
     let cont = Arc::new(Controller::new(ControllerConfig {
         db_path,
         ..ControllerConfig::default()
