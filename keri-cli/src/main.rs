@@ -16,13 +16,13 @@ use utils::handle_info;
 use crate::said::handle_sad;
 
 mod init;
+mod kel;
 mod keri;
 mod mesagkesto;
 mod resolve;
 mod said;
 mod sign;
 mod tel;
-mod kel;
 mod utils;
 
 #[derive(Parser)]
@@ -132,6 +132,8 @@ pub enum KelCommands {
     Rotate {
         #[arg(short, long)]
         alias: String,
+        #[arg(short = 'c', long)]
+        rotation_config: Option<PathBuf>,
     },
     Get {
         #[arg(short, long)]
@@ -193,6 +195,10 @@ pub enum CliError {
     MesagkestoError(#[from] MesagkestoError),
     #[error("Said error: {0}")]
     SaidError(#[from] SaidError),
+    #[error("Error: {0}")]
+    NotReady(String),
+    #[error("Unknown identifier: {0}")]
+    UnknownIdentifier(String),
 }
 
 #[tokio::main]
@@ -227,23 +233,31 @@ async fn main() -> Result<(), CliError> {
         }) => {
             handle_init(alias, keys_file, config).await?;
         }
-        Some(Commands::Kel { command }) => {
-            match command {
-                KelCommands::Query { alias, identifier } => {
-                    let identifier: IdentifierPrefix = identifier.parse().unwrap();
-                    handle_kel_query(&alias, &identifier).await.unwrap();
-                },
-                KelCommands::Rotate { alias } => {
-                   handle_rotate(&alias).await.unwrap();
-                },
-                KelCommands::Get { alias, identifier } => {
-                    let id: IdentifierPrefix = identifier.parse().unwrap();
-                    let kel = handle_get_kel(&alias, &id).await?;
-                    match kel {
-                        Some(kel) => println!("{}", kel),
-                        None => println!("No kel of {} locally", identifier),
-                    };
+        Some(Commands::Kel { command }) => match command {
+            KelCommands::Query { alias, identifier } => {
+                let identifier: IdentifierPrefix = identifier.parse().unwrap();
+                match handle_kel_query(&alias, &identifier).await {
+                    Ok(kel) => {
+                        println!("KEL updated");
+                        println!("{}", kel);
+                    },
+                    Err(_) => println!("Kel not ready yet"),
                 }
+
+            }
+            KelCommands::Rotate {
+                alias,
+                rotation_config,
+            } => {
+                handle_rotate(&alias, rotation_config).await.unwrap();
+            }
+            KelCommands::Get { alias, identifier } => {
+                let id: IdentifierPrefix = identifier.parse().unwrap();
+                let kel = handle_get_kel(&alias, &id).await?;
+                match kel {
+                    Some(kel) => println!("{}", kel),
+                    None => println!("\nNo kel of {} locally", identifier),
+                };
             }
         },
         Some(Commands::Mesagkesto { command }) => match command {

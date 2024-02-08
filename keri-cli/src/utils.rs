@@ -40,7 +40,12 @@ pub fn load_identifier(alias: &str) -> Result<IdentifierPrefix> {
     id_path.push("id");
 
     let identifier: IdentifierPrefix = fs::read_to_string(id_path.clone())
-        .unwrap_or_else(|_| panic!("Should have been able to read the file: {}", id_path.to_str().unwrap())) 
+        .unwrap_or_else(|_| {
+            panic!(
+                "Should have been able to read the file: {}",
+                id_path.to_str().unwrap()
+            )
+        })
         .trim()
         .parse()
         .unwrap();

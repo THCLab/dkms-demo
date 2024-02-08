@@ -1,6 +1,7 @@
 use anyhow::Result;
 use controller::{
-    identifier_controller::IdentifierController, BasicPrefix, Controller, CryptoBox, IdentifierPrefix, KeyManager, LocationScheme, Oobi, SelfSigningPrefix
+    identifier_controller::IdentifierController, BasicPrefix, Controller, CryptoBox,
+    IdentifierPrefix, KeyManager, LocationScheme, Oobi, SelfSigningPrefix,
 };
 use keri_controller as controller;
 use keri_core::{
@@ -183,18 +184,30 @@ pub async fn query_kel(
     for qry in id.query_own_watchers(about_who)? {
         let signature = SelfSigningPrefix::Ed25519Sha512(km.sign(&qry.encode()?)?);
         id.finalize_query(vec![(qry, signature)]).await?;
-    };
+    }
     Ok(())
 }
-
 
 pub async fn rotate(
     id: &IdentifierController,
     current_signer: Arc<Signer>,
     new_next_keys: Vec<BasicPrefix>,
+    new_next_threshold: u64,
+    witness_to_add: Vec<LocationScheme>,
+    witness_to_remove: Vec<BasicPrefix>,
+    witness_threshold: u64,
 ) -> Result<()> {
     let current_keys_prefix = vec![BasicPrefix::Ed25519NT(current_signer.public_key())];
-    let rotation = id.rotate(current_keys_prefix, new_next_keys, vec![], vec![], 1).await?;
+    let rotation = id
+        .rotate(
+            current_keys_prefix,
+            new_next_keys,
+            new_next_threshold,
+            witness_to_add,
+            witness_to_remove,
+            witness_threshold,
+        )
+        .await?;
     let signature = SelfSigningPrefix::new(
         cesrox::primitives::codes::self_signing::SelfSigning::Ed25519Sha512,
         current_signer.sign(rotation.as_bytes())?,
@@ -211,7 +224,6 @@ pub async fn rotate(
 
     Ok(())
 }
-
 
 pub async fn issue(
     identifier: &IdentifierController,

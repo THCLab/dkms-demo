@@ -56,7 +56,7 @@ impl Default for KeysConfig {
     }
 }
 
-fn deserialize_key<'de, D>(deserializer: D) -> Result<SeedPrefix, D::Error>
+pub(crate) fn deserialize_key<'de, D>(deserializer: D) -> Result<SeedPrefix, D::Error>
 where
     D: de::Deserializer<'de>,
 {
