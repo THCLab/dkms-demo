@@ -1,6 +1,6 @@
 use anyhow::Result;
 use controller::{
-    identifier_controller::IdentifierController, BasicPrefix, Controller, CryptoBox, IdentifierPrefix, KeyManager, LocationScheme, Oobi, SeedPrefix, SelfSigningPrefix
+    identifier_controller::IdentifierController, BasicPrefix, Controller, CryptoBox, IdentifierPrefix, KeyManager, LocationScheme, Oobi, SelfSigningPrefix
 };
 use keri_controller as controller;
 use keri_core::{

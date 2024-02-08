@@ -43,11 +43,17 @@ pub async fn handle_rotate(alias: &str) -> Result<(), CliError> {
     let mut priv_key_path = store_path.clone();
     priv_key_path.push("priv_key");
 
-    fs::copy(&nsk_path, store_path).unwrap();
+    fs::copy(&nsk_path, priv_key_path).unwrap();
 
     // Save new next key
     let mut file = File::create(nsk_path).unwrap();
     file.write_all(new_seed.to_str().as_bytes()).unwrap();
 
     Ok(())
+}
+
+pub async fn handle_get_kel(alias: &str, about_who: &IdentifierPrefix) -> Result<Option<String>, CliError> {
+    let id = load(alias).unwrap();
+
+	Ok(id.source.storage.get_kel(&about_who).unwrap().map(|v| String::from_utf8(v).unwrap()))
 }

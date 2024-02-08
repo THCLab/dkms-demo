@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use clap::{Parser, Subcommand};
 use config_file::ConfigFileError;
 use init::handle_init;
-use kel::{handle_kel_query, handle_rotate};
+use kel::{handle_get_kel, handle_kel_query, handle_rotate};
 use keri_controller::IdentifierPrefix;
 use mesagkesto::MesagkestoError;
 use resolve::handle_resolve;
@@ -133,6 +133,12 @@ pub enum KelCommands {
         #[arg(short, long)]
         alias: String,
     },
+    Get {
+        #[arg(short, long)]
+        alias: String,
+        #[arg(short, long)]
+        identifier: String,
+    },
     Query {
         #[arg(short, long)]
         alias: String,
@@ -230,6 +236,14 @@ async fn main() -> Result<(), CliError> {
                 KelCommands::Rotate { alias } => {
                    handle_rotate(&alias).await.unwrap();
                 },
+                KelCommands::Get { alias, identifier } => {
+                    let id: IdentifierPrefix = identifier.parse().unwrap();
+                    let kel = handle_get_kel(&alias, &id).await?;
+                    match kel {
+                        Some(kel) => println!("{}", kel),
+                        None => println!("No kel of {} locally", identifier),
+                    };
+                }
             }
         },
         Some(Commands::Mesagkesto { command }) => match command {
