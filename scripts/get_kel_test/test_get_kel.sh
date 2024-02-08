@@ -2,9 +2,9 @@ alias keri-cli="./target/release/keri-cli"
 MESAGKESTO_ADDRESS="http://172.17.0.1:3236"
 INPUT_DATA_DIR="./payloads"
 
-keri-cli init -a alice -c "./scripts/pamkeri/pamkeri_config.yaml"
+keri-cli init -a alice -c "./scripts//get_kel_test/alice_config.yaml"
 
-keri-cli init -a bob -c "./scripts/bobs_config.yaml"
+keri-cli init -a bob -c "./scripts/get_kel_test/bobs_config.yaml"
 
 keri-cli oobi get -a bob > boboobi.json 
 keri-cli oobi resolve -a alice -f boboobi.json
@@ -26,3 +26,5 @@ end=`date +%s%3N`
 echo "\nQuering time was `expr $end - $start` miliseconds.\n"
 
 echo $KEL
+
+rm boboobi.json
