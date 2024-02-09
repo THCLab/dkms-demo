@@ -23,8 +23,8 @@ use crate::{
 
 #[derive(Deserialize, Serialize, Debug)]
 struct KelConfig {
-    pub witness: Option<LocationScheme>,
-    pub watcher: Option<LocationScheme>,
+    pub witness: Option<Vec<LocationScheme>>,
+    pub watcher: Option<Vec<LocationScheme>>,
 }
 
 impl Default for KelConfig {
@@ -32,7 +32,7 @@ impl Default for KelConfig {
         let witness_oobi: LocationScheme = serde_json::from_str(r#"{"eid":"BJq7UABlttINuWJh1Xl2lkqZG4NTdUdqnbFJDa6ZyxCC","scheme":"http","url":"http://localhost:3232/"}"#).unwrap();
 
         Self {
-            witness: Some(witness_oobi),
+            witness: Some(vec![witness_oobi]),
             watcher: None,
         }
     }
@@ -102,9 +102,9 @@ pub async fn handle_init(
         db_path,
         keys.current.clone(),
         keri_controller::BasicPrefix::Ed25519NT(npk),
-        kel_config.witness,
+        kel_config.witness.unwrap_or_default(),
         None,
-        kel_config.watcher,
+        kel_config.watcher.unwrap_or_default(),
     )
     .await?;
 
@@ -135,9 +135,9 @@ async fn incept(
     db_path: PathBuf,
     priv_key: SeedPrefix,
     next_key: BasicPrefix,
-    witness: Option<LocationScheme>,
+    witness: Vec<LocationScheme>,
     messagebox: Option<LocationScheme>,
-    watcher: Option<LocationScheme>,
+    watcher: Vec<LocationScheme>,
 ) -> Result<IdentifierController, KeriError> {
     let cont = Arc::new(Controller::new(ControllerConfig {
         db_path,
@@ -148,7 +148,7 @@ async fn incept(
         cont,
         signer,
         next_key,
-        witness.unwrap(),
+        witness,
         messagebox,
         watcher,
     )

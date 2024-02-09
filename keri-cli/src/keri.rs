@@ -56,13 +56,13 @@ pub async fn setup_identifier(
     cont: Arc<Controller>,
     signer: Arc<Signer>,
     next_pk: BasicPrefix,
-    witness: LocationScheme,
+    witness: Vec<LocationScheme>,
     messagebox: Option<LocationScheme>,
-    watcher: Option<LocationScheme>,
+    watcher: Vec<LocationScheme>,
 ) -> Result<IdentifierController, KeriError> {
     let pks = vec![BasicPrefix::Ed25519(signer.public_key())];
     let npks = vec![next_pk];
-    let signing_inception = cont.incept(pks, npks, vec![witness.clone()], 1).await?;
+    let signing_inception = cont.incept(pks, npks, witness.clone(), 1).await?;
     let signature = SelfSigningPrefix::new(
         cesrox::primitives::codes::self_signing::SelfSigning::Ed25519Sha512,
         signer.sign(signing_inception.as_bytes())?,
@@ -75,25 +75,27 @@ pub async fn setup_identifier(
 
     id.notify_witnesses().await?;
 
-    let witness_id = match &witness.eid {
-        controller::IdentifierPrefix::Basic(bp) => bp.clone(),
-        _ => todo!(),
-    };
+    for wit in witness {
+        // Send witness oobi to watcher.
+        id.source
+            .send_oobi_to_watcher(&id.id, &Oobi::Location(wit.clone()))
+            .await?;
 
-    let _queries = query_mailbox(&id, signer.clone(), &witness_id).await?;
+        match &wit.eid {
+            IdentifierPrefix::Basic(bp) => {
+                let _queries = query_mailbox(&id, signer.clone(), bp).await?;
+            },
+            _ => todo!(),
+        }
+    };
 
     if let Some(messagebox_oobi) = messagebox {
         add_messagebox(&id, signer.clone(), &messagebox_oobi).await?;
     };
 
-    if let Some(watcher_oobi) = watcher {
-        add_watcher(&id, signer, &watcher_oobi).await?;
+    for watch in watcher {
+        add_watcher(&id, signer.clone(), &watch).await?;
     };
-
-    // Send witness oobi to watcher.
-    id.source
-        .send_oobi_to_watcher(&id.id, &Oobi::Location(witness))
-        .await?;
 
     Ok(id)
 }

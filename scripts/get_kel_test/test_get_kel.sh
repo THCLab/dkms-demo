@@ -2,7 +2,7 @@ alias keri-cli="./target/release/keri-cli"
 MESAGKESTO_ADDRESS="http://172.17.0.1:3236"
 INPUT_DATA_DIR="./payloads"
 
-keri-cli init -a alice -c "./scripts//get_kel_test/alice_config.yaml"
+keri-cli init -a alice -c "./scripts/get_kel_test/alice_config.yaml"
 
 keri-cli init -a bob -c "./scripts/get_kel_test/bobs_config.yaml"
 
