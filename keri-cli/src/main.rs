@@ -185,7 +185,7 @@ pub enum SaidCommands {
 #[derive(Error, Debug)]
 pub enum CliError {
     #[error(transparent)]
-    SeedsUnparsable(#[from] ConfigFileError),
+    ConfigUnparsable(#[from] ConfigFileError),
     #[error("Keys derivation error")]
     KeysDerivationError,
     #[error(transparent)]

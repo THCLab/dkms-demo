@@ -1,8 +1,5 @@
 use std::{
-    fs::{self, File},
-    io::Write,
-    path::PathBuf,
-    sync::Arc,
+    fs::{self, File}, io::Write, net, path::PathBuf, sync::Arc
 };
 
 use crate::{init, keri::KeriError, utils::load_homedir};
@@ -12,7 +9,7 @@ use figment::{
     Figment,
 };
 use keri_controller::{BasicPrefix, CesrPrimitive, IdentifierPrefix, LocationScheme, SeedPrefix};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     keri::{query_kel, rotate},
@@ -20,13 +17,12 @@ use crate::{
     CliError,
 };
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 struct RotationConfig {
     witness_to_add: Vec<LocationScheme>,
     witness_to_remove: Vec<BasicPrefix>,
     witness_threshold: u64,
-    #[serde(deserialize_with = "init::deserialize_key")]
-    new_next_seed: SeedPrefix,
+    new_next_seed: Option<SeedPrefix>,
     new_next_threshold: u64,
 }
 
@@ -37,7 +33,7 @@ impl Default for RotationConfig {
             witness_to_add: Default::default(),
             witness_to_remove: Default::default(),
             witness_threshold: 1,
-            new_next_seed: SeedPrefix::RandomSeed256Ed25519(current.as_bytes().to_vec()),
+            new_next_seed: Some(SeedPrefix::RandomSeed256Ed25519(current.as_bytes().to_vec())),
             new_next_threshold: 1,
         }
     }
@@ -75,8 +71,12 @@ pub async fn handle_rotate(alias: &str, config_path: Option<PathBuf>) -> Result<
     // Load next keys as current
     let current_signer = Arc::new(load_next_signer(alias)?);
 
-    let (npk, _nsk) = rotation_config
-        .new_next_seed
+    let new_next_seed = rotation_config.new_next_seed.unwrap_or({
+        let current = SigningKey::generate(&mut rand::rngs::OsRng);
+        SeedPrefix::RandomSeed256Ed25519(current.as_bytes().to_vec())
+    });
+
+    let (npk, _nsk) = new_next_seed
         .derive_key_pair()
         .map_err(|_e| CliError::KeysDerivationError)?;
     let next_bp = BasicPrefix::Ed25519NT(npk);
@@ -110,7 +110,7 @@ pub async fn handle_rotate(alias: &str, config_path: Option<PathBuf>) -> Result<
 
     // Save new next key
     let mut file = File::create(nsk_path)?;
-    file.write_all(rotation_config.new_next_seed.to_str().as_bytes())?;
+    file.write_all(new_next_seed.to_str().as_bytes())?;
 
     Ok(())
 }

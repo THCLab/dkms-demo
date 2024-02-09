@@ -15,7 +15,7 @@ use keri_controller::{
     CesrPrimitive, Controller, LocationScheme, SeedPrefix,
 };
 use keri_core::signer::Signer;
-use serde::{de, Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     keri::{setup_identifier, KeriError}, utils, CliError
@@ -38,11 +38,9 @@ impl Default for KelConfig {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 struct KeysConfig {
-    #[serde(deserialize_with = "deserialize_key")]
     pub current: SeedPrefix,
-    #[serde(deserialize_with = "deserialize_key")]
     pub next: SeedPrefix,
 }
 
@@ -57,15 +55,7 @@ impl Default for KeysConfig {
     }
 }
 
-pub(crate) fn deserialize_key<'de, D>(deserializer: D) -> Result<SeedPrefix, D::Error>
-where
-    D: de::Deserializer<'de>,
-{
-    let s: &str = de::Deserialize::deserialize(deserializer)?;
 
-    s.parse::<SeedPrefix>()
-        .map_err(|_e| de::Error::unknown_variant(s, &[]))
-}
 
 pub async fn handle_init(
     alias: String,
@@ -155,4 +145,22 @@ async fn incept(
     .await?;
 
     Ok(id)
+}
+
+#[test]
+fn test_keys_config_parse() {
+    let keys_yaml = "current: AFmIICAHyx5VfLZR2hrpSlTYKFPE58updFl-U96YBhda
+next: AFmIICAHyx5VfLZR2hrpSlTYKFPE58updFl-U96YBhda";
+
+    let dir = tempfile::tempdir().unwrap();
+
+    let file_path = dir.path().join("temporary_keys.yaml");
+    let mut file = File::create(file_path.clone()).unwrap();
+    writeln!(file, "{}", &keys_yaml).unwrap();
+   
+    let conf: Result<KeysConfig, _> = Figment::new()
+            .merge(Yaml::file(file_path))
+            .extract();
+    assert!(conf.is_ok());
+
 }
