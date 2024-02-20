@@ -5,11 +5,7 @@ use keri_controller::{
     identifier_controller::IdentifierController, EndRole, IdentifierPrefix, Oobi,
 };
 
-use crate::{
-    keri::KeriError,
-    utils::load,
-    CliError, OobiRoles,
-};
+use crate::{keri::KeriError, utils::load, CliError, OobiRoles};
 
 pub async fn handle_resolve(alias: &str, path: PathBuf) -> Result<(), CliError> {
     let id_cont = load(alias)?;

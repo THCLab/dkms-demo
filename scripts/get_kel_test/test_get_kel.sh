@@ -21,10 +21,10 @@ while [ "$KEL" = "Kel not ready yet" ]
 do
   KEL=$(keri-cli kel query -a alice -i $BOB_ID)
 done
-
+  
 end=`date +%s%3N`
 echo "\nQuering time was `expr $end - $start` miliseconds.\n"
 
-echo $KEL
+echo "\n$KEL"
 
 rm boboobi.json

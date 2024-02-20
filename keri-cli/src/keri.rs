@@ -1,12 +1,12 @@
 use anyhow::Result;
 use controller::{
-    identifier_controller::IdentifierController, BasicPrefix, Controller,
-    IdentifierPrefix, LocationScheme, Oobi, SelfSigningPrefix,
+    identifier_controller::IdentifierController, BasicPrefix, Controller, IdentifierPrefix,
+    LocationScheme, Oobi, SelfSigningPrefix,
 };
 use keri_controller as controller;
 use keri_core::{
-    actor::prelude::SelfAddressingIdentifier, keys::KeysError, prefix::IndexedSignature,
-    query::query_event::SignedKelQuery, signer::Signer,
+    actor::prelude::SelfAddressingIdentifier, event_message::signed_event_message::Message,
+    keys::KeysError, prefix::IndexedSignature, query::query_event::SignedKelQuery, signer::Signer,
 };
 use std::sync::Arc;
 use thiserror::Error;
@@ -22,7 +22,7 @@ pub enum KeriError {
 }
 
 pub async fn add_watcher(
-    id: &IdentifierController,
+    id: &mut IdentifierController,
     km: Arc<Signer>,
     watcher_oobi: &LocationScheme,
 ) -> Result<(), KeriError> {
@@ -37,7 +37,7 @@ pub async fn add_watcher(
 }
 
 pub async fn add_messagebox(
-    id: &IdentifierController,
+    id: &mut IdentifierController,
     km: Arc<Signer>,
     messagebox_oobi: &LocationScheme,
 ) -> Result<(), KeriError> {
@@ -71,7 +71,7 @@ pub async fn setup_identifier(
         .finalize_inception(signing_inception.as_bytes(), &signature)
         .await?;
 
-    let id = IdentifierController::new(signing_identifier.clone(), cont.clone(), None);
+    let mut id = IdentifierController::new(signing_identifier.clone(), cont.clone(), None);
 
     id.notify_witnesses().await?;
 
@@ -84,18 +84,18 @@ pub async fn setup_identifier(
         match &wit.eid {
             IdentifierPrefix::Basic(bp) => {
                 let _queries = query_mailbox(&id, signer.clone(), bp).await?;
-            },
+            }
             _ => todo!(),
         }
-    };
+    }
 
     if let Some(messagebox_oobi) = messagebox {
-        add_messagebox(&id, signer.clone(), &messagebox_oobi).await?;
+        add_messagebox(&mut id, signer.clone(), &messagebox_oobi).await?;
     };
 
     for watch in watcher {
-        add_watcher(&id, signer.clone(), &watch).await?;
-    };
+        add_watcher(&mut id, signer.clone(), &watch).await?;
+    }
 
     Ok(id)
 }
@@ -198,7 +198,7 @@ pub async fn query_kel(
 }
 
 pub async fn rotate(
-    id: &IdentifierController,
+    id: &mut IdentifierController,
     current_signer: Arc<Signer>,
     new_next_keys: Vec<BasicPrefix>,
     new_next_threshold: u64,
@@ -207,6 +207,22 @@ pub async fn rotate(
     witness_threshold: u64,
 ) -> Result<(), KeriError> {
     let current_keys_prefix = vec![BasicPrefix::Ed25519NT(current_signer.public_key())];
+
+    // If new witness is added, send own kel to them
+    let own_kel = id.source.storage.get_kel_messages(&id.id)?.unwrap();
+    for witness in &witness_to_add {
+        id.source.resolve_loc_schema(witness).await?;
+        for msg in own_kel.iter() {
+            id.source
+                .send_message_to(
+                    &witness.eid,
+                    keri_core::oobi::Scheme::Http,
+                    Message::Notice(msg.clone()),
+                )
+                .await?;
+        }
+    }
+
     let rotation = id
         .rotate(
             current_keys_prefix,
@@ -225,17 +241,17 @@ pub async fn rotate(
 
     id.notify_witnesses().await?;
 
-    let state = id.source.get_state(&id.id)?;
-    // TODO
-    let witnesses = state.witness_config.witnesses[0].clone();
+    let witnesses = id.state.witness_config.witnesses[0].clone();
 
-    let _queries = query_mailbox(&id, current_signer.clone(), &witnesses).await?;
+    let _queries = query_mailbox(id, current_signer.clone(), &witnesses)
+        .await
+        .unwrap();
 
     Ok(())
 }
 
 pub async fn issue(
-    identifier: &IdentifierController,
+    identifier: &mut IdentifierController,
     cred_said: SelfAddressingIdentifier,
     km: Arc<Signer>,
 ) -> Result<(), KeriError> {

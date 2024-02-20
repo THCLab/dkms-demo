@@ -29,7 +29,7 @@ pub async fn handle_tel_incept(alias: &str) -> Result<(), CliError> {
 }
 
 pub async fn handle_issue(alias: &str, data: &str) -> Result<(), CliError> {
-    let id = load(alias)?;
+    let mut id = load(alias)?;
     let root: Value = serde_json::from_str(data).unwrap();
     let digest: &str = root
         .get("d")
@@ -38,7 +38,7 @@ pub async fn handle_issue(alias: &str, data: &str) -> Result<(), CliError> {
     let said: SelfAddressingIdentifier = digest.parse().unwrap();
 
     let signer = Arc::new(load_signer(alias)?);
-    issue(&id, said, signer).await?;
+    issue(&mut id, said, signer).await?;
 
     Ok(())
 }

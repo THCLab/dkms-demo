@@ -1,8 +1,11 @@
 use std::{
-    fs::{self, File}, io::Write, net, path::PathBuf, sync::Arc
+    fs::{self, File},
+    io::Write,
+    path::PathBuf,
+    sync::Arc,
 };
 
-use crate::{init, keri::KeriError, utils::load_homedir};
+use crate::{keri::KeriError, utils::load_homedir};
 use ed25519_dalek::SigningKey;
 use figment::{
     providers::{Format, Yaml},
@@ -33,7 +36,9 @@ impl Default for RotationConfig {
             witness_to_add: Default::default(),
             witness_to_remove: Default::default(),
             witness_threshold: 1,
-            new_next_seed: Some(SeedPrefix::RandomSeed256Ed25519(current.as_bytes().to_vec())),
+            new_next_seed: Some(SeedPrefix::RandomSeed256Ed25519(
+                current.as_bytes().to_vec(),
+            )),
             new_next_threshold: 1,
         }
     }
@@ -67,7 +72,7 @@ pub async fn handle_rotate(alias: &str, config_path: Option<PathBuf>) -> Result<
         None => RotationConfig::default(),
     };
 
-    let id = load(alias)?;
+    let mut id = load(alias)?;
     // Load next keys as current
     let current_signer = Arc::new(load_next_signer(alias)?);
 
@@ -83,7 +88,7 @@ pub async fn handle_rotate(alias: &str, config_path: Option<PathBuf>) -> Result<
 
     // Rotate keys
     rotate(
-        &id,
+        &mut id,
         current_signer,
         vec![next_bp],
         rotation_config.new_next_threshold,
@@ -98,7 +103,7 @@ pub async fn handle_rotate(alias: &str, config_path: Option<PathBuf>) -> Result<
     // Save new settings in file
     let mut store_path = load_homedir()?;
     store_path.push(".keri-cli");
-    store_path.push(&alias);
+    store_path.push(alias);
 
     let mut nsk_path = store_path.clone();
     nsk_path.push("next_priv_key");
@@ -124,7 +129,7 @@ pub async fn handle_get_kel(
     Ok(id
         .source
         .storage
-        .get_kel(&about_who)
+        .get_kel(about_who)
         .map_err(KeriError::KeriError)?
         .map(|v| String::from_utf8(v).unwrap()))
 }

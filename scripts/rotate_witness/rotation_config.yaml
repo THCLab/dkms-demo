@@ -1,0 +1,9 @@
+witness_to_add: 
+  - eid: BJq7UABlttINuWJh1Xl2lkqZG4NTdUdqnbFJDa6ZyxCC
+    scheme: http
+    url: http://172.17.0.1:3232/
+witness_to_remove: 
+  - BDg1zxxf8u4Hx5IPraZzmStfSCZFZbDzMHjqVcFW5OfP
+witness_threshold: 1
+new_next_seed: AFmIICAHyx5VfLZR2hrpSlTYKFPE58updFl-U96YBhda
+new_next_threshold: 1

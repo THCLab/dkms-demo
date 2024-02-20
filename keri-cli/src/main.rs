@@ -248,7 +248,7 @@ async fn main() -> Result<(), CliError> {
                         println!("KEL updated");
                         println!("{}", kel);
                     }
-                    Err(_) => println!("Kel not ready yet"),
+                    Err(_e) => println!("Kel not ready yet"),
                 }
             }
             KelCommands::Rotate {

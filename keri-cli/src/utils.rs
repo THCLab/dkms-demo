@@ -33,7 +33,9 @@ pub fn load(alias: &str) -> Result<IdentifierController, LoadingError> {
     registry_path.push("reg_id");
 
     let identifier: IdentifierPrefix = fs::read_to_string(id_path.clone())
-        .map_err(|_e| LoadingError::PathError("Should have been able to read the file".to_string()))?
+        .map_err(|_e| {
+            LoadingError::PathError("Should have been able to read the file".to_string())
+        })?
         .parse()
         .map_err(|_e| {
             LoadingError::ParsingError(format!(
@@ -58,7 +60,9 @@ pub fn load_identifier(alias: &str) -> Result<IdentifierPrefix, LoadingError> {
     id_path.push("id");
 
     let identifier: IdentifierPrefix = fs::read_to_string(id_path.clone())
-        .map_err(|_e| LoadingError::PathError("Should have been able to read the file".to_string()))?
+        .map_err(|_e| {
+            LoadingError::PathError("Should have been able to read the file".to_string())
+        })?
         .trim()
         .parse()
         .map_err(|_e| {
@@ -80,7 +84,7 @@ pub fn load_controller(alias: &str) -> Result<Controller, LoadingError> {
         db_path,
         ..ControllerConfig::default()
     })
-    .map_err(|e| LoadingError::ControllerError(e))?;
+    .map_err(LoadingError::ControllerError)?;
     Ok(cont)
 }
 

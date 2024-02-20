@@ -8,7 +8,8 @@ use std::{
 use config_file::FromConfigFile;
 use ed25519_dalek::SigningKey;
 use figment::{
-    providers::{Format, Yaml}, Figment
+    providers::{Format, Yaml},
+    Figment,
 };
 use keri_controller::{
     config::ControllerConfig, identifier_controller::IdentifierController, BasicPrefix,
@@ -18,7 +19,8 @@ use keri_core::signer::Signer;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    keri::{setup_identifier, KeriError}, utils, CliError
+    keri::{setup_identifier, KeriError},
+    utils, CliError,
 };
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -54,8 +56,6 @@ impl Default for KeysConfig {
         }
     }
 }
-
-
 
 pub async fn handle_init(
     alias: String,
@@ -134,15 +134,7 @@ async fn incept(
         ..ControllerConfig::default()
     })?);
     let signer = Arc::new(Signer::new_with_seed(&priv_key)?);
-    let id = setup_identifier(
-        cont,
-        signer,
-        next_key,
-        witness,
-        messagebox,
-        watcher,
-    )
-    .await?;
+    let id = setup_identifier(cont, signer, next_key, witness, messagebox, watcher).await?;
 
     Ok(id)
 }
@@ -157,10 +149,7 @@ next: AFmIICAHyx5VfLZR2hrpSlTYKFPE58updFl-U96YBhda";
     let file_path = dir.path().join("temporary_keys.yaml");
     let mut file = File::create(file_path.clone()).unwrap();
     writeln!(file, "{}", &keys_yaml).unwrap();
-   
-    let conf: Result<KeysConfig, _> = Figment::new()
-            .merge(Yaml::file(file_path))
-            .extract();
-    assert!(conf.is_ok());
 
+    let conf: Result<KeysConfig, _> = Figment::new().merge(Yaml::file(file_path)).extract();
+    assert!(conf.is_ok());
 }
