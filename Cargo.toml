@@ -1,5 +1,5 @@
 [workspace]
 
 members = [
-	"keri-cli"
+	"dkms-dev-cli"
 ]

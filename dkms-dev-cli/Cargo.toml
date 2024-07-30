@@ -1,5 +1,5 @@
 [package]
-name = "keri-cli"
+name = "dkms-dev-cli"
 version = "0.1.0"
 edition = "2021"
 
