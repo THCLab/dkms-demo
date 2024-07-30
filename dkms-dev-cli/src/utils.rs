@@ -43,13 +43,13 @@ pub fn load(alias: &str) -> Result<Identifier, LoadingError> {
                 id_path.to_str().unwrap()
             ))
         })?;
-    // let registry_id = match fs::read_to_string(registry_path.clone()) {
-    //     Ok(reg) => reg.parse().ok(),
-    //     Err(_) => None,
-    // };
+    let registry_id = match fs::read_to_string(registry_path.clone()) {
+        Ok(reg) => reg.parse().ok(),
+        Err(_) => None,
+    };
 
     let cont = Arc::new(load_controller(alias)?);
-    Ok(Identifier::new(identifier, cont.known_events.clone(), cont.communication.clone()))
+    Ok(Identifier::new(identifier, registry_id, cont.known_events.clone(), cont.communication.clone()))
 }
 
 pub fn load_identifier(alias: &str) -> Result<IdentifierPrefix, LoadingError> {

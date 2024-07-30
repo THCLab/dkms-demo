@@ -11,10 +11,10 @@ pub async fn handle_resolve(alias: &str, path: PathBuf) -> Result<(), CliError> 
     let id_cont = load(alias)?;
     let file = fs::read_to_string(path).expect("Should have been able to read the file");
     for oobi in serde_json::from_str::<Vec<Oobi>>(&file).unwrap() {
-        id_cont
+        let _ = id_cont
             .resolve_oobi(&oobi)
             .await
-            .map_err(KeriError::MechanicsError)?;
+            .map_err(KeriError::MechanicsError);
         id_cont
             .send_oobi_to_watcher(&id_cont.id(), &oobi)
             .await

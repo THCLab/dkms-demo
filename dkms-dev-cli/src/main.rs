@@ -10,7 +10,7 @@ use mesagkesto::MesagkestoError;
 use resolve::handle_resolve;
 use said::SaidError;
 use sign::handle_sign;
-use tel::{handle_issue, handle_query};
+use tel::{handle_issue, handle_query, handle_tel_oobi};
 use thiserror::Error;
 use utils::{handle_info, LoadingError};
 
@@ -125,6 +125,10 @@ pub enum TelCommands {
         registry_id: String,
         #[arg(short, long)]
         said: String,
+    },
+    Oobi {
+        #[arg(short, long)]
+        alias: String,
     },
 }
 
@@ -306,6 +310,9 @@ async fn main() -> Result<(), CliError> {
                 said,
             } => {
                 handle_query(&alias, &said, &registry_id, &issuer_id).await?;
+            }
+            TelCommands::Oobi { alias } => {
+                handle_tel_oobi(&alias)?;
             }
         },
         Some(Commands::Said { command }) => match command {
