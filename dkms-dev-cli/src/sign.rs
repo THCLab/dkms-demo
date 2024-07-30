@@ -13,6 +13,6 @@ pub fn handle_sign(alias: String, data: &str) -> Result<String, CliError> {
             .map_err(|e| LoadingError::SignerError(e.to_string()))?,
     );
     Ok(cont
-        .sign_to_cesr(data, signature, 0)
+        .sign_to_cesr(data, &[signature])
         .map_err(KeriError::ControllerError)?)
 }

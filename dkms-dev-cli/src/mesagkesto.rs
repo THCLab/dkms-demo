@@ -26,7 +26,7 @@ pub fn handle_exchange(alias: &str, data: &str, receiver_alias: &str) -> Result<
             .map_err(|_e| MesagkestoError::SigningError)?,
     );
     Ok(signer_id
-        .sign_to_cesr(&exn.to_string(), signature, 0)
+        .sign_to_cesr(&exn.to_string(), &[signature])
         .map_err(|_e| MesagkestoError::SigningError)?)
 }
 
@@ -36,7 +36,7 @@ pub fn handle_pull(alias: &str) -> Result<String, CliError> {
     let signer_id = load(alias)?;
     let signer = load_signer(alias)?;
 
-    let qry = messagebox::query_by_sn(signer_id.id.to_string(), 0);
+    let qry = messagebox::query_by_sn(signer_id.id().to_string(), 0);
 
     let signature = keri_controller::SelfSigningPrefix::Ed25519Sha512(
         signer
@@ -44,6 +44,6 @@ pub fn handle_pull(alias: &str) -> Result<String, CliError> {
             .map_err(|_e| MesagkestoError::SigningError)?,
     );
     Ok(signer_id
-        .sign_to_cesr(&qry.to_string(), signature, 0)
+        .sign_to_cesr(&qry.to_string(), &[signature])
         .map_err(|_e| MesagkestoError::SigningError)?)
 }

@@ -12,8 +12,8 @@ use figment::{
     Figment,
 };
 use keri_controller::{
-    config::ControllerConfig, identifier_controller::IdentifierController, BasicPrefix,
-    CesrPrimitive, Controller, LocationScheme, SeedPrefix,
+    config::ControllerConfig, identifier::Identifier, BasicPrefix,
+    CesrPrimitive, controller::Controller, LocationScheme, SeedPrefix,
 };
 use keri_core::signer::Signer;
 use serde::{Deserialize, Serialize};
@@ -104,13 +104,13 @@ pub async fn handle_init(
     let mut file = File::create(nsk_path)?;
     file.write_all(keys.next.to_str().as_bytes())?;
 
-    print!("\nIdentifier for alias {} initialized: {}", alias, id.id);
+    print!("\nIdentifier for alias {} initialized: {}", alias, id.id());
 
     // Save identifier
     let mut id_path = store_path.clone();
     id_path.push("id");
     let mut file = File::create(id_path)?;
-    file.write_all(id.id.to_string().as_bytes())?;
+    file.write_all(id.id().to_string().as_bytes())?;
 
     // Save private key
     let mut priv_key_path = store_path.clone();
@@ -128,7 +128,7 @@ async fn incept(
     witness: Vec<LocationScheme>,
     messagebox: Option<LocationScheme>,
     watcher: Vec<LocationScheme>,
-) -> Result<IdentifierController, KeriError> {
+) -> Result<Identifier, KeriError> {
     let cont = Arc::new(Controller::new(ControllerConfig {
         db_path,
         ..ControllerConfig::default()

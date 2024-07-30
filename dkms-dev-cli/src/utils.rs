@@ -2,7 +2,7 @@ use std::{fs, path::PathBuf, sync::Arc};
 
 use anyhow::Result;
 use keri_controller::{
-    config::ControllerConfig, identifier_controller::IdentifierController, Controller,
+    config::ControllerConfig, identifier::Identifier, controller::Controller,
     IdentifierPrefix, SeedPrefix,
 };
 use keri_core::signer::Signer;
@@ -23,7 +23,7 @@ pub enum LoadingError {
     SignerError(String),
 }
 
-pub fn load(alias: &str) -> Result<IdentifierController, LoadingError> {
+pub fn load(alias: &str) -> Result<Identifier, LoadingError> {
     let mut store_path = load_homedir()?;
     store_path.push(".keri-cli");
     store_path.push(alias);
@@ -43,13 +43,13 @@ pub fn load(alias: &str) -> Result<IdentifierController, LoadingError> {
                 id_path.to_str().unwrap()
             ))
         })?;
-    let registry_id = match fs::read_to_string(registry_path.clone()) {
-        Ok(reg) => reg.parse().ok(),
-        Err(_) => None,
-    };
+    // let registry_id = match fs::read_to_string(registry_path.clone()) {
+    //     Ok(reg) => reg.parse().ok(),
+    //     Err(_) => None,
+    // };
 
     let cont = Arc::new(load_controller(alias)?);
-    Ok(IdentifierController::new(identifier, cont, registry_id))
+    Ok(Identifier::new(identifier, cont.known_events.clone(), cont.communication.clone()))
 }
 
 pub fn load_identifier(alias: &str) -> Result<IdentifierPrefix, LoadingError> {
@@ -120,10 +120,10 @@ pub fn load_next_signer(alias: &str) -> Result<Signer, LoadingError> {
 
 pub fn handle_info(alias: &str) -> Result<(), LoadingError> {
     let cont = load(alias)?;
-    let info = if let Some(reg) = cont.registry_id {
-        json!({"id": cont.id, "registry": reg})
+    let info = if let Some(reg) = cont.registry_id() {
+        json!({"id": cont.id(), "registry": reg})
     } else {
-        json!({"id": cont.id})
+        json!({"id": cont.id()})
     };
     println!("{}", serde_json::to_string(&info).unwrap());
 

@@ -23,7 +23,7 @@ pub async fn handle_tel_incept(alias: &str) -> Result<(), CliError> {
     let mut reg_path = store_path.clone();
     reg_path.push("reg_id");
     let mut file = File::create(reg_path)?;
-    file.write_all(id.registry_id.as_ref().unwrap().to_string().as_bytes())?;
+    file.write_all(id.registry_id().as_ref().unwrap().to_string().as_bytes())?;
 
     Ok(())
 }
@@ -59,7 +59,7 @@ pub async fn handle_query(
 
     println!(
         "{:?}",
-        who_id.source.tel.get_vc_state(&said).unwrap().unwrap()
+        who_id.find_vc_state(&said).unwrap().unwrap()
     );
 
     Ok(())

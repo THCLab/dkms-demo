@@ -12,6 +12,7 @@ use figment::{
     Figment,
 };
 use keri_controller::{BasicPrefix, CesrPrimitive, IdentifierPrefix, LocationScheme, SeedPrefix};
+use keri_core::actor::prelude::Message;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -55,12 +56,10 @@ pub async fn handle_kel_query(
         .await
         .map_err(|e| CliError::NotReady(e.to_string()))?;
     let kel = id
-        .source
-        .storage
-        .get_kel(about_who)
-        .map_err(KeriError::KeriError)?;
-    kel.map(|kel| String::from_utf8(kel).unwrap())
-        .ok_or(CliError::UnknownIdentifier(about_who.to_str()))
+        .get_kel(about_who).ok_or(CliError::UnknownIdentifier(about_who.to_str()))?;
+    let kel_str = kel.into_iter().flat_map(|kel| Message::Notice(kel).to_cesr().unwrap());
+    Ok(String::from_utf8(kel_str.collect()).unwrap())
+        
 }
 
 pub async fn handle_rotate(alias: &str, config_path: Option<PathBuf>) -> Result<(), CliError> {
@@ -98,7 +97,7 @@ pub async fn handle_rotate(alias: &str, config_path: Option<PathBuf>) -> Result<
     )
     .await?;
 
-    print!("\nKeys rotated for alias {} ({})", alias, id.id);
+    print!("\nKeys rotated for alias {} ({})", alias, id.id());
 
     // Save new settings in file
     let mut store_path = load_homedir()?;
@@ -126,10 +125,8 @@ pub async fn handle_get_kel(
 ) -> Result<Option<String>, CliError> {
     let id = load(alias)?;
 
-    Ok(id
-        .source
-        .storage
-        .get_kel(about_who)
-        .map_err(KeriError::KeriError)?
-        .map(|v| String::from_utf8(v).unwrap()))
+    let kel = id
+        .get_kel(about_who).ok_or(CliError::UnknownIdentifier(about_who.to_str()))?;
+    let kel_str = kel.into_iter().flat_map(|kel| Message::Notice(kel).to_cesr().unwrap());
+    Ok(Some(String::from_utf8(kel_str.collect()).unwrap()))
 }
