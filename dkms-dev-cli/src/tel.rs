@@ -17,7 +17,7 @@ pub async fn handle_tel_incept(alias: &str) -> Result<(), CliError> {
 
     // Save registry identifier
     let mut store_path = load_homedir()?;
-    store_path.push(".keri-cli");
+    store_path.push(".dkms-dev-cli");
     store_path.push(alias);
 
     let mut reg_path = store_path.clone();

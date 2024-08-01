@@ -5,7 +5,7 @@
 - `config` - folder with configuration files for docker compose,
 - `events` - pregenerated keri events,
 - `scripts` - folder with scripts, that tests infrastructure,
-- `keri-cli` - rust project that provides binary for keri events generation.
+- `dkms-dev-cli` - rust project that provides binary for keri events generation.
 
 ## Usage
 

@@ -1,11 +1,11 @@
-alias keri-cli="./target/release/keri-cli"
+alias dkms-dev-cli="./target/release/dkms-dev-cli"
 MESAGKESTO_ADDRESS="http://172.17.0.1:3236"
 
-keri-cli init -a bob -c "./scripts/pamkeri/pamkeri_config.yaml"
-BOB_INFO=$(keri-cli info -a bob)
+dkms-dev-cli init -a bob -c "./scripts/pamkeri/pamkeri_config.yaml"
+BOB_INFO=$(dkms-dev-cli info -a bob)
 BOB_ID=$(echo $BOB_INFO | jq '.id' | tr -d '"')
 
-INFO=$(keri-cli info -a alice)
+INFO=$(dkms-dev-cli info -a alice)
 ALICE_ID=$(echo $INFO | jq '.id' | tr -d '"')
 REGISTRY_ID=$(echo $INFO | jq '.registry' | tr -d '"')
 
@@ -15,27 +15,27 @@ TMP_ACDC='{"v":"ACDC10JSON000133_","d":"EG9kClwtClse9J7eaQgByM7prbx1NDmEdqHT-HgC
 
 echo $TMP_ACDC > tmp_acdc.json
 # Compute digest od ACDC
-ACDC=$(keri-cli said sad -f tmp_acdc.json)
+ACDC=$(dkms-dev-cli said sad -f tmp_acdc.json)
 ACDC_DIGEST=$(echo $ACDC | jq '.d' | tr -d '"')
 
-keri-cli tel issue -a alice -c "$ACDC"
+dkms-dev-cli tel issue -a alice -c "$ACDC"
 
 echo "\nACDC issued: $ACDC"
 
 # Bob sign acdc and send it to mesagkesto
-SIGNED_ACDC=$(keri-cli sign -a bob -d "$ACDC")
+SIGNED_ACDC=$(dkms-dev-cli sign -a bob -d "$ACDC")
 echo $SIGNED_ACDC
 
-BOB_OOBI=$(keri-cli oobi get -a bob) 
+BOB_OOBI=$(dkms-dev-cli oobi get -a bob) 
 BOB_OOBI1=$(echo "$BOB_OOBI" | jq -c '.[0]') 
 BOB_OOBI2=$(echo "$BOB_OOBI" | jq -c '.[1]')
 
 
-ALICE_OOBI=$(keri-cli oobi get -a alice) 
+ALICE_OOBI=$(dkms-dev-cli oobi get -a alice) 
 ALICE_OOBI1=$(echo "$ALICE_OOBI" | jq -c '.[0]') 
 ALICE_OOBI2=$(echo "$ALICE_OOBI" | jq -c '.[1]')
 
-EXN=$(keri-cli mesagkesto exchange -a bob -r mach -c "$ALICE_OOBI2$BOB_OOBI2$SIGNED_ACDC")
+EXN=$(dkms-dev-cli mesagkesto exchange -a bob -r mach -c "$ALICE_OOBI2$BOB_OOBI2$SIGNED_ACDC")
 echo "\n exn: $EXN"
 
 # # echo $OOBI2 > aliceoobi.json

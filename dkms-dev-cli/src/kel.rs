@@ -101,7 +101,7 @@ pub async fn handle_rotate(alias: &str, config_path: Option<PathBuf>) -> Result<
 
     // Save new settings in file
     let mut store_path = load_homedir()?;
-    store_path.push(".keri-cli");
+    store_path.push(".dkms-dev-cli");
     store_path.push(alias);
 
     let mut nsk_path = store_path.clone();

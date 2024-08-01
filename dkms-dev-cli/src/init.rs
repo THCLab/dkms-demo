@@ -64,7 +64,7 @@ pub async fn handle_init(
 ) -> Result<(), CliError> {
     // Compute kel database path
     let mut store_path = utils::load_homedir()?;
-    store_path.push(".keri-cli");
+    store_path.push(".dkms-dev-cli");
     store_path.push(&alias);
     fs::create_dir_all(&store_path)?;
     let mut db_path = store_path.clone();

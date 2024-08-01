@@ -25,7 +25,7 @@ pub enum LoadingError {
 
 pub fn load(alias: &str) -> Result<Identifier, LoadingError> {
     let mut store_path = load_homedir()?;
-    store_path.push(".keri-cli");
+    store_path.push(".dkms-dev-cli");
     store_path.push(alias);
     let mut id_path = store_path.clone();
     id_path.push("id");
@@ -54,7 +54,7 @@ pub fn load(alias: &str) -> Result<Identifier, LoadingError> {
 
 pub fn load_identifier(alias: &str) -> Result<IdentifierPrefix, LoadingError> {
     let mut store_path = load_homedir()?;
-    store_path.push(".keri-cli");
+    store_path.push(".dkms-dev-cli");
     store_path.push(alias);
     let mut id_path = store_path.clone();
     id_path.push("id");
@@ -76,7 +76,7 @@ pub fn load_identifier(alias: &str) -> Result<IdentifierPrefix, LoadingError> {
 
 pub fn load_controller(alias: &str) -> Result<Controller, LoadingError> {
     let mut db_path = load_homedir()?;
-    db_path.push(".keri-cli");
+    db_path.push(".dkms-dev-cli");
     db_path.push(alias);
     db_path.push("db");
 
@@ -90,7 +90,7 @@ pub fn load_controller(alias: &str) -> Result<Controller, LoadingError> {
 
 pub fn load_signer(alias: &str) -> Result<Signer, LoadingError> {
     let mut path = load_homedir()?;
-    path.push(".keri-cli");
+    path.push(".dkms-dev-cli");
     path.push(alias);
     path.push("priv_key");
     let sk_str = fs::read_to_string(path)?;
@@ -105,7 +105,7 @@ pub fn load_signer(alias: &str) -> Result<Signer, LoadingError> {
 
 pub fn load_next_signer(alias: &str) -> Result<Signer, LoadingError> {
     let mut path = load_homedir()?;
-    path.push(".keri-cli");
+    path.push(".dkms-dev-cli");
     path.push(alias);
     path.push("next_priv_key");
     let sk_str = fs::read_to_string(path)?;
