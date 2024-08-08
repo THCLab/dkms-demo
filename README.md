@@ -1,4 +1,6 @@
-# Purpose
+# Ambient infrastructure
+
+## Purpose
 
 Demonstrate the practical usage of the [DKMS](https://dkms.colossi.network/) network consisting of KERI Witnesses and Watchers.
 
