@@ -226,7 +226,6 @@ async fn main() -> Result<(), CliError> {
                 let identifier: IdentifierPrefix = identifier.parse().unwrap();
                 match handle_kel_query(&alias, &identifier).await {
                     Ok(kel) => {
-                        println!("KEL updated");
                         println!("{}", kel);
                     }
                     Err(_e) => println!("Kel not ready yet"),
