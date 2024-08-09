@@ -6,8 +6,12 @@ Demonstrate the practical usage of the [DKMS](https://dkms.colossi.network/) net
 
 ## Usage
 
-Run `docker compose up` to start a simple network of 3 Witnesses, 1 Watcher, and 1 Mesagkesto.
-To build a Rust binary, run `cargo build --release`. Then, you can run scripts from the `scripts` folder.
+1. Run infrastructure using `docker compose up`. It starts a simple network of 3 Witnesses, 1 Watcher, and 1 Mesagkesto.
+2. Build CLI binary, run `cargo build --release`.
+
+### Tests
+
+Navigate to the `scripts` dir and run the scripts.
 
 # Repository structure
 
