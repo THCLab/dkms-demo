@@ -1,19 +1,17 @@
 use std::{
-    fs::{self, File},
+    fs::{self, create_dir_all, File},
     io::Write,
     path::PathBuf,
+    process,
     sync::Arc,
 };
 
 use config_file::FromConfigFile;
 use ed25519_dalek::SigningKey;
-use figment::{
-    providers::{Format, Yaml},
-    Figment,
-};
+
 use keri_controller::{
-    config::ControllerConfig, identifier::Identifier, BasicPrefix,
-    CesrPrimitive, controller::Controller, LocationScheme, SeedPrefix,
+    config::ControllerConfig, controller::Controller, identifier::Identifier, BasicPrefix,
+    CesrPrimitive, LocationScheme, SeedPrefix,
 };
 use keri_core::signer::Signer;
 use serde::{Deserialize, Serialize};
@@ -57,11 +55,59 @@ impl Default for KeysConfig {
     }
 }
 
+fn ask_for_confirmation(prompt: &str) -> bool {
+    print!("{} ", prompt);
+    std::io::stdout().flush().unwrap();
+
+    let mut input = String::new();
+    std::io::stdin()
+        .read_line(&mut input)
+        .expect("Failed to read line");
+
+    let input = input.trim().to_lowercase();
+    input == "y" || input == "yes"
+}
+
 pub async fn handle_init(
     alias: String,
     keys_file: Option<PathBuf>,
     config_file: Option<PathBuf>,
 ) -> Result<(), CliError> {
+    let kel_config = match config_file {
+        Some(config_path) => KelConfig::from_config_file(config_path).unwrap(),
+        None => {
+            // Check if file exists in default location
+            let mut config_path = utils::load_homedir()?;
+            config_path.push(".dkms-dev-cli");
+            config_path.push(&alias);
+            create_dir_all(&config_path).unwrap();
+            config_path.push("config.yaml");
+            if config_path.is_file() {
+                KelConfig::from_config_file(config_path).unwrap()
+            } else {
+                if ask_for_confirmation(&format!(
+                    "Config file not found. Do you want to create one in `{}`? (y/N)",
+                    &config_path.to_str().unwrap()
+                )) {
+                    let config = KelConfig::default();
+                    let f = File::create(config_path).unwrap();
+                    serde_yaml::to_writer(f, &config).unwrap();
+                    config
+                } else {
+                    process::exit(1);
+                }
+            }
+        }
+    };
+
+    let keys = match keys_file {
+        Some(file_path) => KeysConfig::from_config_file(file_path)?,
+        None => {
+            // println!("Generating keypairs for {}", &alias);
+            KeysConfig::default()
+        }
+    };
+
     // Compute kel database path
     let mut store_path = utils::load_homedir()?;
     store_path.push(".dkms-dev-cli");
@@ -69,19 +115,6 @@ pub async fn handle_init(
     fs::create_dir_all(&store_path)?;
     let mut db_path = store_path.clone();
     db_path.push("db");
-
-    let keys = match keys_file {
-        Some(file_path) => KeysConfig::from_config_file(file_path)?,
-        None => KeysConfig::default(),
-    };
-
-    let kel_config = match config_file {
-        Some(cfgs) => Figment::new()
-            .merge(Yaml::file(cfgs.clone()))
-            .extract()
-            .map_err(|e| CliError::PathError(e.to_string()))?,
-        None => KelConfig::default(),
-    };
 
     let (npk, _nsk) = keys
         .next
@@ -141,6 +174,10 @@ async fn incept(
 
 #[test]
 fn test_keys_config_parse() {
+    use figment::{
+        providers::{Format, Yaml},
+        Figment,
+    };
     let keys_yaml = "current: AFmIICAHyx5VfLZR2hrpSlTYKFPE58updFl-U96YBhda
 next: AFmIICAHyx5VfLZR2hrpSlTYKFPE58updFl-U96YBhda";
 

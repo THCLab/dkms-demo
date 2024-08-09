@@ -2,8 +2,8 @@ use std::{fs, path::PathBuf, sync::Arc};
 
 use anyhow::Result;
 use keri_controller::{
-    config::ControllerConfig, identifier::Identifier, controller::Controller,
-    IdentifierPrefix, SeedPrefix,
+    config::ControllerConfig, controller::Controller, identifier::Identifier, IdentifierPrefix,
+    SeedPrefix,
 };
 use keri_core::signer::Signer;
 use serde_json::json;
@@ -49,7 +49,12 @@ pub fn load(alias: &str) -> Result<Identifier, LoadingError> {
     };
 
     let cont = Arc::new(load_controller(alias)?);
-    Ok(Identifier::new(identifier, registry_id, cont.known_events.clone(), cont.communication.clone()))
+    Ok(Identifier::new(
+        identifier,
+        registry_id,
+        cont.known_events.clone(),
+        cont.communication.clone(),
+    ))
 }
 
 pub fn load_identifier(alias: &str) -> Result<IdentifierPrefix, LoadingError> {

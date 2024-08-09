@@ -1,14 +1,19 @@
 use anyhow::Result;
 use controller::{
-    BasicPrefix, controller::Controller, IdentifierPrefix,
-    LocationScheme, Oobi, SelfSigningPrefix,
+    controller::Controller, BasicPrefix, IdentifierPrefix, LocationScheme, Oobi, SelfSigningPrefix,
 };
-use keri_controller::{self as controller, identifier::{mechanics::MechanicsError, Identifier}};
+use keri_controller::{
+    self as controller,
+    identifier::{mechanics::MechanicsError, Identifier},
+};
 use keri_core::{
-    actor::prelude::SelfAddressingIdentifier, event_message::signed_event_message::Message,
-    keys::KeysError, prefix::IndexedSignature, query::{mailbox::SignedMailboxQuery, query_event::SignedKelQuery}, signer::Signer,
+    actor::prelude::SelfAddressingIdentifier,
+    keys::KeysError,
+    prefix::IndexedSignature,
+    query::mailbox::SignedMailboxQuery,
+    signer::Signer,
 };
-use std::{error, sync::Arc};
+use std::sync::Arc;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -28,7 +33,8 @@ pub async fn add_watcher(
     km: Arc<Signer>,
     watcher_oobi: &LocationScheme,
 ) -> Result<(), KeriError> {
-    id.resolve_oobi(&Oobi::Location(watcher_oobi.clone())).await?;
+    id.resolve_oobi(&Oobi::Location(watcher_oobi.clone()))
+        .await?;
     let rpy = id.add_watcher(watcher_oobi.eid.clone())?;
     let signature = SelfSigningPrefix::new(
         cesrox::primitives::codes::self_signing::SelfSigning::Ed25519Sha512,
@@ -70,8 +76,7 @@ pub async fn setup_identifier(
         cesrox::primitives::codes::self_signing::SelfSigning::Ed25519Sha512,
         signer.sign(signing_inception.as_bytes())?,
     );
-    let mut signing_identifier = cont
-        .finalize_incept(signing_inception.as_bytes(), &signature)?;
+    let mut signing_identifier = cont.finalize_incept(signing_inception.as_bytes(), &signature)?;
 
     // let mut signing_identifier = Identifier::new(signing_identifier.clone(), cont.clone(), None);
 
@@ -102,10 +107,7 @@ pub async fn setup_identifier(
     Ok(signing_identifier)
 }
 
-pub async fn incept_registry(
-    id: &mut Identifier,
-    signer: Arc<Signer>,
-) -> Result<(), KeriError> {
+pub async fn incept_registry(id: &mut Identifier, signer: Arc<Signer>) -> Result<(), KeriError> {
     // Init tel
     let (reg_id, ixn) = id.incept_registry()?;
     let signature = SelfSigningPrefix::new(
@@ -131,7 +133,10 @@ pub async fn query_mailbox(
     witness_id: &BasicPrefix,
 ) -> Result<Vec<SignedMailboxQuery>, KeriError> {
     let mut out = vec![];
-    for qry in id.query_mailbox(&id.id(), &[witness_id.clone()])?.into_iter() {
+    for qry in id
+        .query_mailbox(&id.id(), &[witness_id.clone()])?
+        .into_iter()
+    {
         let signature = SelfSigningPrefix::Ed25519Sha512(km.sign(&qry.encode()?)?);
         let signatures = vec![IndexedSignature::new_both_same(signature.clone(), 0)];
         let signed_qry = SignedMailboxQuery::new_trans(qry.clone(), id.id().clone(), signatures);
@@ -245,13 +250,12 @@ pub async fn rotate(
 
     id.notify_witnesses().await?;
 
-    let witnesses = id.find_state(id.id())?.witness_config.witnesses;// state.witness_config.witnesses[0].clone();
+    let witnesses = id.find_state(id.id())?.witness_config.witnesses; // state.witness_config.witnesses[0].clone();
     for witness in witnesses {
-            let _queries = query_mailbox(id, current_signer.clone(), &witness)
-        .await
-        .unwrap();
-    };
-
+        let _queries = query_mailbox(id, current_signer.clone(), &witness)
+            .await
+            .unwrap();
+    }
 
     Ok(())
 }

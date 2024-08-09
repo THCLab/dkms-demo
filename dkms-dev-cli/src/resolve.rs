@@ -1,9 +1,7 @@
 use std::fs;
 use std::path::PathBuf;
 
-use keri_controller::{
-    identifier::Identifier, EndRole, IdentifierPrefix, Oobi,
-};
+use keri_controller::{identifier::Identifier, EndRole, IdentifierPrefix, Oobi};
 
 use crate::{keri::KeriError, utils::load, CliError, OobiRoles};
 
@@ -37,8 +35,7 @@ pub fn witnesses(identifier: &Identifier) -> Result<Vec<IdentifierPrefix>, CliEr
 
 /// Returns watchers' identifiers of alias
 pub fn watcher(identifier: &Identifier) -> Result<Vec<IdentifierPrefix>, CliError> {
-    let watchers = identifier.watchers()
-        .map_err(KeriError::ControllerError)?;
+    let watchers = identifier.watchers().map_err(KeriError::ControllerError)?;
     Ok(watchers)
 }
 

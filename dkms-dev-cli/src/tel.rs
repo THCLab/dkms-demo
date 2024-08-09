@@ -66,15 +66,19 @@ pub async fn handle_query(
     Ok(())
 }
 
-
-pub fn handle_tel_oobi(
-    alias: &str,
-) -> Result<(), CliError> {
+pub fn handle_tel_oobi(alias: &str) -> Result<(), CliError> {
     let identifier = load(alias)?;
     let registry_id = identifier.registry_id().unwrap();
-    let oobis = identifier.witnesses().map(|wit_id| {
-        Oobi::EndRole(EndRole { cid: registry_id.clone(), role: keri_core::oobi::Role::Witness, eid: IdentifierPrefix::Basic(wit_id) })
-    }).collect::<Vec<_>>();
+    let oobis = identifier
+        .witnesses()
+        .map(|wit_id| {
+            Oobi::EndRole(EndRole {
+                cid: registry_id.clone(),
+                role: keri_core::oobi::Role::Witness,
+                eid: IdentifierPrefix::Basic(wit_id),
+            })
+        })
+        .collect::<Vec<_>>();
 
     println!("{}", serde_json::to_string(&oobis).unwrap());
 

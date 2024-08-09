@@ -56,10 +56,12 @@ pub async fn handle_kel_query(
         .await
         .map_err(|e| CliError::NotReady(e.to_string()))?;
     let kel = id
-        .get_kel(about_who).ok_or(CliError::UnknownIdentifier(about_who.to_str()))?;
-    let kel_str = kel.into_iter().flat_map(|kel| Message::Notice(kel).to_cesr().unwrap());
+        .get_kel(about_who)
+        .ok_or(CliError::UnknownIdentifier(about_who.to_str()))?;
+    let kel_str = kel
+        .into_iter()
+        .flat_map(|kel| Message::Notice(kel).to_cesr().unwrap());
     Ok(String::from_utf8(kel_str.collect()).unwrap())
-        
 }
 
 pub async fn handle_rotate(alias: &str, config_path: Option<PathBuf>) -> Result<(), CliError> {
@@ -126,7 +128,10 @@ pub async fn handle_get_kel(
     let id = load(alias)?;
 
     let kel = id
-        .get_kel(about_who).ok_or(CliError::UnknownIdentifier(about_who.to_str()))?;
-    let kel_str = kel.into_iter().flat_map(|kel| Message::Notice(kel).to_cesr().unwrap());
+        .get_kel(about_who)
+        .ok_or(CliError::UnknownIdentifier(about_who.to_str()))?;
+    let kel_str = kel
+        .into_iter()
+        .flat_map(|kel| Message::Notice(kel).to_cesr().unwrap());
     Ok(Some(String::from_utf8(kel_str.collect()).unwrap()))
 }
