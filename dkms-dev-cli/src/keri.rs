@@ -4,7 +4,7 @@ use controller::{
 };
 use keri_controller::{
     self as controller,
-    identifier::{mechanics::MechanicsError, Identifier},
+    identifier::{mechanics::{query_mailbox, MechanicsError}, Identifier},
 };
 use keri_core::{
     actor::prelude::SelfAddressingIdentifier,
@@ -66,12 +66,13 @@ pub async fn setup_identifier(
     signer: Arc<Signer>,
     next_pk: BasicPrefix,
     witness: Vec<LocationScheme>,
+    witness_threshold: u64,
     messagebox: Option<LocationScheme>,
     watcher: Vec<LocationScheme>,
 ) -> Result<Identifier, KeriError> {
     let pks = vec![BasicPrefix::Ed25519(signer.public_key())];
     let npks = vec![next_pk];
-    let signing_inception = cont.incept(pks, npks, witness.clone(), 1).await?;
+    let signing_inception = cont.incept(pks, npks, witness.clone(), witness_threshold).await?;
     let signature = SelfSigningPrefix::new(
         cesrox::primitives::codes::self_signing::SelfSigning::Ed25519Sha512,
         signer.sign(signing_inception.as_bytes())?,
@@ -83,6 +84,11 @@ pub async fn setup_identifier(
     signing_identifier.notify_witnesses().await?;
 
     for wit in witness {
+        // signing_identifier.resolve_oobi(Oobi::Location(oobi));
+        if let IdentifierPrefix::Basic(wit_id) = &wit.eid { 
+            query_mailbox(&mut signing_identifier, signer.clone(), &wit_id).await?;
+        };
+        
         // Send witness oobi to watcher.
         signing_identifier
             .send_oobi_to_watcher(&signing_identifier.id(), &Oobi::Location(wit.clone()))
@@ -140,11 +146,7 @@ pub async fn query_mailbox(
         let signature = SelfSigningPrefix::Ed25519Sha512(km.sign(&qry.encode()?)?);
         let signatures = vec![IndexedSignature::new_both_same(signature.clone(), 0)];
         let signed_qry = SignedMailboxQuery::new_trans(qry.clone(), id.id().clone(), signatures);
-        // println!(
-        //     "\nSigned mailbox query: {}",
-        //     String::from_utf8(signed_qry.to_cesr()?)?
-        // );
-        id.finalize_query_mailbox(vec![(qry, signature)]).await;
+        id.finalize_query_mailbox(vec![(qry, signature)]).await?;
         out.push(signed_qry)
     }
     Ok(out)

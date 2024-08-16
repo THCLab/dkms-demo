@@ -3,9 +3,9 @@ use std::path::PathBuf;
 use clap::{Parser, Subcommand};
 use config_file::ConfigFileError;
 use init::handle_init;
-use kel::{handle_get_kel, handle_kel_query, handle_rotate};
+use kel::{handle_get_alias_kel, handle_get_identifier_kel, handle_kel_query, handle_rotate};
 use keri::KeriError;
-use keri_controller::IdentifierPrefix;
+use keri_controller::{IdentifierPrefix, LocationScheme};
 use mesagkesto::MesagkestoError;
 use resolve::handle_resolve;
 use said::SaidError;
@@ -25,6 +25,7 @@ mod said;
 mod sign;
 mod tel;
 mod utils;
+mod temporary_id;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -133,10 +134,10 @@ pub enum KelCommands {
         rotation_config: Option<PathBuf>,
     },
     Get {
-        #[arg(short, long)]
-        alias: String,
-        #[arg(short, long)]
-        identifier: String,
+        #[clap(flatten)]
+        group: KelGettingGroup, 
+        #[clap(short, long)]
+        oobi: Option<String>,
     },
     Query {
         #[arg(short, long)]
@@ -144,6 +145,15 @@ pub enum KelCommands {
         #[arg(short, long)]
         identifier: String,
     },
+}
+
+#[derive(Debug, clap::Args)]
+#[group(required = true, multiple = false)]
+pub struct KelGettingGroup {
+    #[clap(short, long)]
+    alias: Option<String>,
+    #[clap(short, long)]
+    identifier: Option<String>,
 }
 
 #[derive(Subcommand)]
@@ -202,6 +212,8 @@ pub enum CliError {
     KeriError(#[from] KeriError),
     #[error(transparent)]
     LoadingError(#[from] LoadingError),
+    #[error("Unparsable identifier: {0}")]
+    UnparsableIdentifier(String)
 }
 
 #[tokio::main]
@@ -237,13 +249,28 @@ async fn main() -> Result<(), CliError> {
             } => {
                 handle_rotate(&alias, rotation_config).await.unwrap();
             }
-            KelCommands::Get { alias, identifier } => {
-                let id: IdentifierPrefix = identifier.parse().unwrap();
-                let kel = handle_get_kel(&alias, &id).await?;
-                match kel {
-                    Some(kel) => println!("{}", kel),
-                    None => println!("\nNo kel of {} locally", identifier),
+            KelCommands::Get { group, oobi } => {
+                match (group.alias, group.identifier) {
+                    (None, Some(id_str)) => {
+                        let id: IdentifierPrefix = id_str.parse().map_err(|e| CliError::UnparsableIdentifier(id_str.to_string()))?;
+
+                        let watcher_oobi: LocationScheme = serde_json::from_str(r#"{"eid":"BF2t2NPc1bwptY1hYV0YCib1JjQ11k9jtuaZemecPF5b","scheme":"http","url":"http://172.17.0.1:3235/"}"#).unwrap();
+                        let kel = handle_get_identifier_kel(&id, oobi.unwrap(), watcher_oobi).await?;
+                         match kel {
+                            Some(kel) => println!("\n{}", kel),
+                            None => println!("\nNo kel of {} found", &id),
+                        };
+                    },
+                    (Some(alias), None) => {
+                        let kel = handle_get_alias_kel(&alias).await?;
+                        match kel {
+                            Some(kel) => println!("\n{}", kel),
+                            None => println!("\nNo kel of {} locally", alias),
+                        };
+                    },
+                    _ => unreachable!(),
                 };
+                
             }
         },
         Some(Commands::Mesagkesto { command }) => match command {

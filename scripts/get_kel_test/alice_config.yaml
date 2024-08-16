@@ -1,8 +1,9 @@
 witness:
-  - eid: BDg1zxxf8u4Hx5IPraZzmStfSCZFZbDzMHjqVcFW5OfP  
+  - eid: BDg3H7Sr-eES0XWXiO8nvMxW6mD_1LxLeE1nuiZxhGp4  
     scheme: http
-    url: http://172.17.0.1:3234/
+    url: http://172.17.0.1:3233/
 watcher: 
   - eid: BF2t2NPc1bwptY1hYV0YCib1JjQ11k9jtuaZemecPF5b
     scheme: http
     url: http://172.17.0.1:3235/
+witness_threshold: 1

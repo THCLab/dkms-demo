@@ -1,30 +1,27 @@
-alias dkms-dev-cli="./target/release/dkms-dev-cli"
-MESAGKESTO_ADDRESS="http://172.17.0.1:3236"
-INPUT_DATA_DIR="./payloads"
+alias cli="./target/release/dkms-dev-cli"
 
-dkms-dev-cli init -a alice -c "./scripts/get_kel_test/alice_config.yaml"
+cli init --alias alice -c "./scripts/get_kel_test/alice_config.yaml"
 
-dkms-dev-cli init -a bob -c "./scripts/get_kel_test/bobs_config.yaml"
+cli init -a bob -c "./scripts/get_kel_test/bobs_config.yaml"
 
-dkms-dev-cli oobi get -a bob > boboobi.json 
-dkms-dev-cli oobi resolve -a alice -f boboobi.json
+cli oobi get -a bob > boboobi.json 
 
-dkms-dev-cli kel rotate -a bob
+cli kel get --alias bob
 
-INFO=$(dkms-dev-cli info -a bob)
+INFO=$(cli info -a bob)
+echo $INFO
 BOB_ID=$(echo $INFO | jq '.id' | tr -d '"')
+echo $BOB_ID
 
-# Query kel until it's ready
-start=`date +%s%3N`
-KEL=$(dkms-dev-cli kel query -a alice -i $BOB_ID)
-while [ "$KEL" = "Kel not ready yet" ]
-do
-  KEL=$(dkms-dev-cli kel query -a alice -i $BOB_ID)
-done
-  
-end=`date +%s%3N`
-echo "\nQuering time was `expr $end - $start` miliseconds.\n"
+BOB_OOBI=$(cli oobi get -a bob)
+cli kel get -i $BOB_ID --oobi $BOB_OOBI
 
-echo "\n$KEL"
+# cli verify --alias alias -p payload --wit_oobi witnessoobi 
+
+
+# cli kel get --alias bob
+
+# cli info --alias chloe 
+# { i: "krzak", "...", witnesses: "", watchers: "" }
 
 rm boboobi.json

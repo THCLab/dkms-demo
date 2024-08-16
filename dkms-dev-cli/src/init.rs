@@ -1,7 +1,7 @@
 use std::{
     fs::{self, create_dir_all, File},
     io::Write,
-    path::PathBuf,
+    path::{Path, PathBuf},
     process,
     sync::Arc,
 };
@@ -22,24 +22,24 @@ use crate::{
 };
 
 #[derive(Deserialize, Serialize, Debug)]
-struct KelConfig {
+pub(crate) struct KelConfig {
     pub witness: Option<Vec<LocationScheme>>,
+    pub witness_threshold: u64,
     pub watcher: Option<Vec<LocationScheme>>,
 }
 
 impl Default for KelConfig {
     fn default() -> Self {
-        let witness_oobi: LocationScheme = serde_json::from_str(r#"{"eid":"BJq7UABlttINuWJh1Xl2lkqZG4NTdUdqnbFJDa6ZyxCC","scheme":"http","url":"http://localhost:3232/"}"#).unwrap();
-
         Self {
-            witness: Some(vec![witness_oobi]),
+            witness: Some(vec![]),
+            witness_threshold: 0,
             watcher: None,
         }
     }
 }
 
 #[derive(Deserialize, Serialize)]
-struct KeysConfig {
+pub(crate) struct KeysConfig {
     pub current: SeedPrefix,
     pub next: SeedPrefix,
 }
@@ -115,21 +115,8 @@ pub async fn handle_init(
     fs::create_dir_all(&store_path)?;
     let mut db_path = store_path.clone();
     db_path.push("db");
-
-    let (npk, _nsk) = keys
-        .next
-        .derive_key_pair()
-        .map_err(|_e| CliError::KeysDerivationError)?;
-
-    let id = incept(
-        db_path,
-        keys.current.clone(),
-        keri_controller::BasicPrefix::Ed25519NT(npk),
-        kel_config.witness.unwrap_or_default(),
-        None,
-        kel_config.watcher.unwrap_or_default(),
-    )
-    .await?;
+    
+    let id = handle_new_id(&keys, kel_config, &db_path).await?;
 
     // Save next keys seed
     let mut nsk_path = store_path.clone();
@@ -154,11 +141,31 @@ pub async fn handle_init(
     Ok(())
 }
 
+pub(crate) async fn handle_new_id(keys: &KeysConfig, kel_config: KelConfig, db_path: &Path) -> Result<Identifier, CliError> {
+    let (npk, _nsk) = keys
+        .next
+        .derive_key_pair()
+        .map_err(|_e| CliError::KeysDerivationError)?;
+
+    let id = incept(
+        db_path.to_path_buf(),
+        keys.current.clone(),
+        keri_controller::BasicPrefix::Ed25519NT(npk),
+        kel_config.witness.unwrap_or_default(),
+        kel_config.witness_threshold,
+        None,
+        kel_config.watcher.unwrap_or_default(),
+    )
+    .await?;
+    Ok(id)
+}
+
 async fn incept(
     db_path: PathBuf,
     priv_key: SeedPrefix,
     next_key: BasicPrefix,
     witness: Vec<LocationScheme>,
+    witness_threshold: u64,
     messagebox: Option<LocationScheme>,
     watcher: Vec<LocationScheme>,
 ) -> Result<Identifier, KeriError> {
@@ -167,7 +174,7 @@ async fn incept(
         ..ControllerConfig::default()
     })?);
     let signer = Arc::new(Signer::new_with_seed(&priv_key)?);
-    let id = setup_identifier(cont, signer, next_key, witness, messagebox, watcher).await?;
+    let id = setup_identifier(cont, signer, next_key, witness, witness_threshold, messagebox, watcher).await?;
 
     Ok(id)
 }

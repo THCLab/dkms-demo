@@ -5,14 +5,14 @@ use std::{
     sync::Arc,
 };
 
-use crate::{keri::KeriError, utils::load_homedir};
+use crate::{keri::KeriError, temporary_id::{clear_temporary_id, create_temporary_id}, utils::{self, load_homedir}};
 use ed25519_dalek::SigningKey;
 use figment::{
     providers::{Format, Yaml},
     Figment,
 };
-use keri_controller::{BasicPrefix, CesrPrimitive, IdentifierPrefix, LocationScheme, SeedPrefix};
-use keri_core::actor::prelude::Message;
+use keri_controller::{identifier::query::QueryResponse, BasicPrefix, CesrPrimitive, IdentifierPrefix, LocationScheme, Oobi, SeedPrefix, SelfSigningPrefix};
+use keri_core::{actor::prelude::Message, signer::Signer};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -121,17 +121,55 @@ pub async fn handle_rotate(alias: &str, config_path: Option<PathBuf>) -> Result<
     Ok(())
 }
 
-pub async fn handle_get_kel(
+pub async fn handle_get_alias_kel(
     alias: &str,
-    about_who: &IdentifierPrefix,
 ) -> Result<Option<String>, CliError> {
     let id = load(alias)?;
 
     let kel = id
-        .get_kel(about_who)
-        .ok_or(CliError::UnknownIdentifier(about_who.to_str()))?;
+        .get_own_kel()
+        .ok_or(CliError::UnknownIdentifier(id.id().to_string()))?;
     let kel_str = kel
         .into_iter()
         .flat_map(|kel| Message::Notice(kel).to_cesr().unwrap());
     Ok(Some(String::from_utf8(kel_str.collect()).unwrap()))
 }
+
+pub async fn handle_get_identifier_kel(
+    identifier: &IdentifierPrefix,
+    oobi: String,
+    watcher_oobi: LocationScheme,
+) -> Result<Option<String>, CliError> {
+
+    let watcher_id = watcher_oobi.eid.clone();
+    let (id, keys_conf) = create_temporary_id(watcher_oobi).await?;
+    let signer =
+        Arc::new(Signer::new_with_seed(&keys_conf.current).unwrap());
+
+    for oobi in serde_json::from_str::<Vec<Oobi>>(&oobi).unwrap() {
+        id
+            .send_oobi_to_watcher(&id.id(), &oobi)
+            .await
+            .map_err(KeriError::ControllerError)?;
+    }
+
+    let qry = id.query_full_log(identifier, watcher_id.clone()).unwrap();
+    let signature = SelfSigningPrefix::Ed25519Sha512(signer.sign(&qry.encode().unwrap()).unwrap());
+    let (mut qry_reps, _errs) = id.finalize_query(vec![(qry, signature)]).await;
+    while let QueryResponse::NoUpdates = qry_reps {
+        let qry = id.query_full_log(identifier, watcher_id.clone()).unwrap();
+        let signature = SelfSigningPrefix::Ed25519Sha512(signer.sign(&qry.encode().unwrap()).unwrap());
+        let (qry_resp, _errs) = id.finalize_query(vec![(qry, signature)]).await;
+        qry_reps = qry_resp;
+    };
+
+    let kel = id
+        .get_kel(identifier)
+        .ok_or(CliError::UnknownIdentifier(identifier.to_string()))?;
+    let kel_str = kel
+        .into_iter()
+        .flat_map(|kel| Message::Notice(kel).to_cesr().unwrap());
+    clear_temporary_id()?;
+    Ok(Some(String::from_utf8(kel_str.collect()).unwrap()))
+}
+
