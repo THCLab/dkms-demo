@@ -136,8 +136,12 @@ pub enum KelCommands {
     Get {
         #[clap(flatten)]
         group: KelGettingGroup, 
+        /// Identifier OOBI
         #[clap(short, long)]
         oobi: Option<String>,
+        /// Watcher OOBI
+        #[clap(short, long)]
+        watcher_oobi: Option<String>,
     },
     Query {
         #[arg(short, long)]
@@ -249,22 +253,29 @@ async fn main() -> Result<(), CliError> {
             } => {
                 handle_rotate(&alias, rotation_config).await.unwrap();
             }
-            KelCommands::Get { group, oobi } => {
+            KelCommands::Get {group,oobi, watcher_oobi } => {
                 match (group.alias, group.identifier) {
                     (None, Some(id_str)) => {
                         let id: IdentifierPrefix = id_str.parse().map_err(|e| CliError::UnparsableIdentifier(id_str.to_string()))?;
 
-                        let watcher_oobi: LocationScheme = serde_json::from_str(r#"{"eid":"BF2t2NPc1bwptY1hYV0YCib1JjQ11k9jtuaZemecPF5b","scheme":"http","url":"http://172.17.0.1:3235/"}"#).unwrap();
-                        let kel = handle_get_identifier_kel(&id, oobi.unwrap(), watcher_oobi).await?;
-                         match kel {
-                            Some(kel) => println!("\n{}", kel),
-                            None => println!("\nNo kel of {} found", &id),
+                        match (oobi, watcher_oobi) {
+                            (None, None) => println!("Missing OOBI of identifier that need to be find and watcher OOBI"),
+                            (None, Some(_)) => println!("Missing OOBI of identifier that need to be find"),
+                            (Some(_), None) => println!("Missing watcher OOBI"),
+                            (Some(oobi), Some(watcher_oobi)) => {
+                                let watcher_oobi: LocationScheme = serde_json::from_str(&watcher_oobi).expect("Can't parse watcher OOBI");
+                                let kel = handle_get_identifier_kel(&id, oobi, watcher_oobi).await?;
+                                match kel {
+                                    Some(kel) => println!("{}", kel),
+                                    None => println!("\nNo kel of {} found", &id),
+                                };
+                            },
                         };
                     },
                     (Some(alias), None) => {
                         let kel = handle_get_alias_kel(&alias).await?;
                         match kel {
-                            Some(kel) => println!("\n{}", kel),
+                            Some(kel) => println!("{}", kel),
                             None => println!("\nNo kel of {} locally", alias),
                         };
                     },

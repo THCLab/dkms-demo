@@ -121,6 +121,7 @@ pub async fn handle_rotate(alias: &str, config_path: Option<PathBuf>) -> Result<
     Ok(())
 }
 
+/// Returns KEL of identifier of provided alias that is stored locally.
 pub async fn handle_get_alias_kel(
     alias: &str,
 ) -> Result<Option<String>, CliError> {
@@ -135,6 +136,7 @@ pub async fn handle_get_alias_kel(
     Ok(Some(String::from_utf8(kel_str.collect()).unwrap()))
 }
 
+/// Queries provided watcher about identifier's KEL, and returns it.
 pub async fn handle_get_identifier_kel(
     identifier: &IdentifierPrefix,
     oobi: String,

@@ -115,28 +115,41 @@ pub async fn handle_init(
     fs::create_dir_all(&store_path)?;
     let mut db_path = store_path.clone();
     db_path.push("db");
+
+    let info = format!("No witnesses are configured for {} identifier, so KEL won't be publicly available. To configure witnesses, provide config file with -c option", &alias);
+    match &kel_config.witness {
+        Some(wits) if wits.is_empty() => println!("{}", info),
+        None => println!("{}", info),
+        Some(_) => ()
+    };
     
-    let id = handle_new_id(&keys, kel_config, &db_path).await?;
+    let id = handle_new_id(&keys, kel_config, &db_path).await;
+    match id {
+        Ok(id) => {
+             // Save next keys seed
+            let mut nsk_path = store_path.clone();
+            nsk_path.push("next_priv_key");
+            let mut file = File::create(nsk_path)?;
+            file.write_all(keys.next.to_str().as_bytes())?;
 
-    // Save next keys seed
-    let mut nsk_path = store_path.clone();
-    nsk_path.push("next_priv_key");
-    let mut file = File::create(nsk_path)?;
-    file.write_all(keys.next.to_str().as_bytes())?;
+            print!("\nIdentifier for alias {} initialized: {}", alias, id.id());
 
-    print!("\nIdentifier for alias {} initialized: {}", alias, id.id());
+            // Save identifier
+            let mut id_path = store_path.clone();
+            id_path.push("id");
+            let mut file = File::create(id_path)?;
+            file.write_all(id.id().to_string().as_bytes())?;
 
-    // Save identifier
-    let mut id_path = store_path.clone();
-    id_path.push("id");
-    let mut file = File::create(id_path)?;
-    file.write_all(id.id().to_string().as_bytes())?;
-
-    // Save private key
-    let mut priv_key_path = store_path.clone();
-    priv_key_path.push("priv_key");
-    let mut file = File::create(priv_key_path)?;
-    file.write_all(keys.current.to_str().as_bytes())?;
+            // Save private key
+            let mut priv_key_path = store_path.clone();
+            priv_key_path.push("priv_key");
+            let mut file = File::create(priv_key_path)?;
+            file.write_all(keys.current.to_str().as_bytes())?;
+        },
+        Err(e) => {
+            println!("{}", e.to_string())
+        },
+    }
 
     Ok(())
 }
