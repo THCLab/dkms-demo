@@ -56,7 +56,7 @@ services:
 
   mesagkesto:
     container_name: mesagkesto
-    image: "ghcr.io/argonauths/mesagkesto:0.3.3"
+    image: "ghcr.io/thclab/mesagkesto:v0.1.2-beta.1"
     restart: always
     depends_on:
       - watcher
