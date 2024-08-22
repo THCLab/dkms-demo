@@ -27,6 +27,7 @@ home = "0.5.5"
 indexmap = { version = "2.1.0", features = ["serde"]}
 figment = {version="0.10.14", features = ["yaml"]}
 serde_yaml = "0.9.30"
+base64 = "0.22.1"
 
 [dev_dependencies]
 tempfile = "3.10.0"

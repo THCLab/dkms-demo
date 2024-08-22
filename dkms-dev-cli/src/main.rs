@@ -1,5 +1,7 @@
 use std::path::PathBuf;
 
+use base64::{prelude::BASE64_STANDARD, Engine};
+use cesrox::primitives::codes::seed::SeedCode;
 use clap::{Parser, Subcommand};
 use config_file::ConfigFileError;
 use init::handle_init;
@@ -9,6 +11,7 @@ use keri_controller::{IdentifierPrefix, LocationScheme};
 use mesagkesto::MesagkestoError;
 use resolve::handle_resolve;
 use said::SaidError;
+use seed::{convert_to_seed, generate_seed};
 use sign::handle_sign;
 use tel::{handle_issue, handle_query, handle_tel_oobi};
 use thiserror::Error;
@@ -26,6 +29,7 @@ mod sign;
 mod tel;
 mod utils;
 mod temporary_id;
+mod seed;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -79,6 +83,19 @@ enum Commands {
         #[arg(short, long)]
         data: String,
     },
+    /// Generate Seed string from provided code and secret key encoded in base64. 
+    /// Code specify algorithm to use. Possible values are: 
+    ///     `A` for Ed25519 private key, 
+    ///     `J` for ECDSA secp256k1 private key, 
+    ///     'K' for Ed448 private key. 
+    /// If no arguments it generates Ed25519 secret key.
+    #[clap(verbatim_doc_comment)]
+    Seed {
+        #[arg(short, long)]
+        code: Option<String>,
+        #[arg(short, long)]
+        secret_key: Option<String>,
+    }
 }
 
 #[derive(Subcommand)]
@@ -217,7 +234,13 @@ pub enum CliError {
     #[error(transparent)]
     LoadingError(#[from] LoadingError),
     #[error("Unparsable identifier: {0}")]
-    UnparsableIdentifier(String)
+    UnparsableIdentifier(String),
+    #[error("Wrong secret key provided")]
+    SecretKeyError,
+    #[error("Invalid base64: {0}")]
+    B64Error(String),
+    #[error("Invalid seed code: {0}")]
+    SeedError(String),
 }
 
 #[tokio::main]
@@ -340,6 +363,28 @@ async fn main() -> Result<(), CliError> {
         }
         Some(Commands::Sign { alias, data }) => {
             println!("{}", handle_sign(alias, &data)?);
+        }
+        Some(Commands::Seed { code, secret_key }) => {
+            // seed is in b64
+            let seed = match (code, secret_key) {
+                (None, None) => Ok(generate_seed()),
+                (None, Some(_sk)) => Ok("Code needs to be provided".to_string()),
+                (Some(_code), None) => Ok("Key needs to be provided".to_string()),
+                (Some(code), Some(sk)) => {
+                    let code = (&code).parse().map_err(|e| CliError::SeedError(code.to_string()));
+                    let sk = BASE64_STANDARD.decode(&sk).map_err(|_| CliError::B64Error(sk.to_string()));
+                    match (code, sk) {
+                        (Ok(code), Ok(sk)) => {
+                            convert_to_seed(code, sk)
+                        },
+                        (Ok(_), Err(e)) | (Err(e), Ok(_)) | (Err(e), Err(_)) => Err(e),
+                    }
+                },
+            };
+            match seed {
+                Ok(seed) => println!("{}", seed),
+                Err(e) => println!("{}", e.to_string()),
+            }
         }
         None => {}
     }
