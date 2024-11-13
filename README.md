@@ -7,7 +7,6 @@ Demonstrate the practical usage of the [DKMS](https://dkms.colossi.network/) net
 ## Usage
 
 1. Run infrastructure using `docker compose up`. It starts a simple network of 3 Witnesses, 1 Watcher, and 1 Mesagkesto.
-2. Build CLI binary, run `cargo build --release`.
 
 ### Tests
 
