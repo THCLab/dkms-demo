@@ -1,3 +1,4 @@
+INPUT_DATA_DIR="./payloads"
 dkms="./dkms"
 
 if [ ! -e "$dkms" ]; then
@@ -5,8 +6,10 @@ if [ ! -e "$dkms" ]; then
     exit 1
 fi
 
-MESAGKESTO_ADDRESS="http://172.17.0.1:3236"
-INPUT_DATA_DIR="./payloads"
+if [ -z "$MESAGKESTO_ADDRESS" ]; then
+    echo "MESAGKESTO_ADDRESS not set. Please set it to the address of the Mesagkesto service"
+    exit 1
+fi
 
 $dkms init -a alice 
 $dkms tel incept -a alice
