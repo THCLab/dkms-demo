@@ -17,5 +17,4 @@ Navigate to the `scripts` dir and run the scripts.
 
 - `config` - folder with configuration files for `docker compose`,
 - `events` - pre-generated keri events,
-- `scripts` - folder with scripts that test infrastructure,
-- `dkms-dev-cli` - Rust-based project providing a binary for generating KERI events.
+- `scripts` - folder with scripts that test infrastructure.
