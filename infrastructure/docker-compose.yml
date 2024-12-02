@@ -1,4 +1,3 @@
-version: "3.9"
 services:
   witness: &witness
     container_name: keriox-witness
