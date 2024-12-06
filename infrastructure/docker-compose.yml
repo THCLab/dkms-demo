@@ -15,6 +15,7 @@ services:
       - type: bind
         source: ./config/witness1.yml
         target: /app/witness.yml
+      - witness1_db_data:/app/db
 
   witness2:
     container_name: keriox-witness2
@@ -25,6 +26,7 @@ services:
       - type: bind
         source: ./config/witness2.yml
         target: /app/witness.yml
+      - witness2_db_data:/app/db/
 
   witness3:
     container_name: keriox-witness3
@@ -35,6 +37,7 @@ services:
       - type: bind
         source: ./config/witness3.yml
         target: /app/witness.yml
+      - witness3_db_data:/app/db/
 
   watcher:
     container_name: keriox-watcher
@@ -50,12 +53,13 @@ services:
       - type: bind
         source: ./config/watcher.yml
         target: /app/watcher.yml
+      - watcher_db_data:/app/db/
     networks:
       - dkms-network
 
   mesagkesto:
     container_name: mesagkesto
-    image: "ghcr.io/thclab/mesagkesto:v0.1.2-beta.1"
+    image: "ghcr.io/thclab/mesagkesto:latest"
     restart: always
     depends_on:
       - watcher
@@ -70,3 +74,9 @@ services:
 
 networks:
   dkms-network:
+
+volumes:
+  witness1_db_data:
+  witness2_db_data:
+  witness3_db_data:
+  watcher_db_data:
