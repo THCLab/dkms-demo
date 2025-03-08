@@ -1,22 +1,22 @@
-alias cli="./target/release/dkms-dev-cli"
+. test-vectors/dkms.sh
 
-cli init --alias alice -c "./scripts/get_kel_test/alice_config.yaml"
+# Ewa would have watcher which would observe any interaction for her
+$dkms identifier init -a ewa --witness-url http://172.17.0.1:3233/ --watcher-url http://172.17.0.1:3235/
 
-cli init -a bob -c "./scripts/get_kel_test/bobs_config.yaml"
+# Jan would NOT have a watcher means he would be able to resolve someone else
+# KEL only locally, by providing KEL direction from witness of the entity which
+# he interact with.
+$dkms identifier init -a jan --witness-url http://172.17.0.1:3233/
 
-cli oobi get -a bob > boboobi.json 
 
-echo "\nLocal bob's KEL: "
-cli kel get --alias bob
-
-INFO=$(cli info -a bob)
+INFO=$($dkms identifier info jan)
 echo $INFO
-BOB_ID=$(echo $INFO | jq '.id' | tr -d '"')
-echo $BOB_ID
+JAN_ID=$(echo $INFO | jq '.id' | tr -d '"')
 
-echo "\nBob's KEL from watcher: "
-BOB_OOBI=$(cli oobi get -a bob)
-WATCHER_OOBI='{"eid":"BF2t2NPc1bwptY1hYV0YCib1JjQ11k9jtuaZemecPF5b","scheme":"http","url":"http://172.17.0.1:3235/"}'
-cli kel get -i $BOB_ID --oobi $BOB_OOBI -w $WATCHER_OOBI
+echo -e "\nLocal Jan's KEL: "
+$dkms log kel find -a jan -i $JAN_ID
 
-rm boboobi.json
+echo -e "\nJan's KEL from watcher: "
+JAN_OOBI=$($dkms identifier oobi get -a jan)
+# Watcher is retrieved from Ewa's identifier
+$dkms log kel find -a ewa -i $JAN_ID --oobi $JAN_OOBI

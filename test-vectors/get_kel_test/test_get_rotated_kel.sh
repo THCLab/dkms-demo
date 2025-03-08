@@ -1,26 +1,24 @@
-alias dkms-dev-cli="./target/release/dkms-dev-cli"
-MESAGKESTO_ADDRESS="http://172.17.0.1:3236"
-INPUT_DATA_DIR="./payloads"
-WATCHER_OOBI='{"eid":"BF2t2NPc1bwptY1hYV0YCib1JjQ11k9jtuaZemecPF5b","scheme":"http","url":"http://172.17.0.1:3235/"}'
+. test-vectors/dkms.sh
 
-dkms-dev-cli init -a alice -c "./scripts/get_kel_test/alice_config.yaml"
+if [ -z "$MESAGKESTO_ADDRESS" ]; then
+    echo "MESAGKESTO_ADDRESS not set. Please set it to the address of the Mesagkesto service"
+    exit 1
+fi
 
-dkms-dev-cli init -a bob -c "./scripts/get_kel_test/bobs_config.yaml"
+$dkms identifier init -a ewa --witness-url http://172.17.0.1:3233/ --watcher-url http://172.17.0.1:3235/
 
-dkms-dev-cli oobi get -a bob > boboobi.json 
-dkms-dev-cli oobi resolve -a alice -f boboobi.json
+$dkms identifier init -a jan --witness-url http://172.17.0.1:3232/ --watcher-url http://172.17.0.1:3235/
+# TODO: do I need to do that?
+# $dkms identifier oobi resolve -a alice -f boboobi.json
 
-INFO=$(dkms-dev-cli info -a bob)
-BOB_ID=$(echo $INFO | jq '.id' | tr -d '"')
-BOB_OOBI=$(dkms-dev-cli oobi get -a bob)
-# echo $BOB_OOBI
+INFO=$($dkms identifier info jan)
+JAN_ID=$(echo $INFO | jq '.id' | tr -d '"')
+JAN_OOBI=$($dkms identifier oobi get -a jan)
 
-echo "\nBob's KEL before rotation:"
-dkms-dev-cli kel get -i $BOB_ID --oobi $BOB_OOBI -w $WATCHER_OOBI
+echo -e "\nJan's KEL before rotation:"
+$dkms log kel find -a jan -i $JAN_ID --oobi $JAN_OOBI
 
-dkms-dev-cli kel rotate -a bob
+$dkms log kel rotate -a jan
 
-echo "\nBob's KEL after rotation:"
-dkms-dev-cli kel get -i $BOB_ID --oobi $BOB_OOBI -w $WATCHER_OOBI
-
-rm boboobi.json
+echo "\nJan's KEL after rotation:"
+$dkms log kel find -a jan -i $JAN_ID --oobi $JAN_OOBI
