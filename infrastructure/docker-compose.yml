@@ -1,11 +1,10 @@
-services:
-  witness: &witness
-    container_name: keriox-witness
-    image: "ghcr.io/thclab/keriox-witness:latest"
-    restart: always
-    networks:
-      - dkms-network
+x-witness: &witness
+  image: "ghcr.io/thclab/keriox-witness:0.17.9"
+  restart: always
+  networks:
+    - dkms-network
 
+services:
   witness1:
     container_name: keriox-witness1
     <<: *witness
@@ -41,10 +40,10 @@ services:
 
   watcher:
     container_name: keriox-watcher
-    image: "ghcr.io/thclab/keriox-watcher:latest"
+    image: "ghcr.io/thclab/keriox-watcher:0.17.9"
     restart: always
     depends_on:
-      - witness
+      - witness1
       - witness2
       - witness3
     ports:
