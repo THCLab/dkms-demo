@@ -1,0 +1,53 @@
+# External host reachable from outside the cluster.
+# For minikube set this to: $(minikube ip)
+# Example: helm install dkms-demo ./helm/dkms-demo --set externalHost=$(minikube ip)
+externalHost: "192.168.49.2"
+
+image:
+  witness:
+    repository: ghcr.io/thclab/keriox-witness
+    tag: "0.17.9"
+    pullPolicy: IfNotPresent
+  watcher:
+    repository: ghcr.io/thclab/keriox-watcher
+    tag: "0.17.9"
+    pullPolicy: IfNotPresent
+  mesagkesto:
+    repository: ghcr.io/thclab/mesagkesto
+    tag: "latest"
+    pullPolicy: IfNotPresent
+
+witnesses:
+  - name: witness1
+    eid: "BJq7UABlttINuWJh1Xl2lkqZG4NTdUdqnbFJDa6ZyxCC"
+    port: 3232
+    nodePort: 30232
+    seed: "ArwXoACJgOleVZ2PY7kXn7rA0II0mHYDhc6WrBH8fDAc"
+  - name: witness2
+    eid: "BDg3H7Sr-eES0XWXiO8nvMxW6mD_1LxLeE1nuiZxhGp4"
+    port: 3233
+    nodePort: 30233
+    seed: "A6zz7M08-HQSFq92sJ8KJOT2cZ47x7pXFQLPB0pckB3Q"
+  - name: witness3
+    eid: "BDg1zxxf8u4Hx5IPraZzmStfSCZFZbDzMHjqVcFW5OfP"
+    port: 3234
+    nodePort: 30234
+    seed: "AcwFTk-wgk3ZT2buPRIbK-zxgPx-TKbaegQvPEivN90Y"
+
+watcher:
+  eid: "BF2t2NPc1bwptY1hYV0YCib1JjQ11k9jtuaZemecPF5b"
+  port: 3235
+  nodePort: 30235
+  seed: "Alntkt3u6dDgiQxTATr01dy8M72uuaZEf9eTdM-70Gk8"
+
+mesagkesto:
+  port: 3236
+  nodePort: 30236
+  seed: "AMRXyU3ErhBNdRSDX1zKlrbZGRp1GfCmkRIa58gF07I8"
+  serverKey: "AAAAky1v068:APA91bHHpGtP6M5h3ICFc9AzY35MrkTmjwblkLlEJ1C0yvkrUu7KDkmkXMzPq2q-0o1l49fKxOeDQaKIkZTTEAIX3Jd45j6KNtSempYqop4Psitvz2Ng7iBz-IeS1SGEs1GpnWseJlpP"
+
+persistence:
+  # Use "standard" for minikube (default StorageClass).
+  # Set to "" to use the cluster default.
+  storageClass: "standard"
+  size: 1Gi

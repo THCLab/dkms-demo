@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mesagkesto
+  labels:
+    {{- include "dkms-demo.labels" . | nindent 4 }}
+    app: mesagkesto
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mesagkesto
+  template:
+    metadata:
+      labels:
+        app: mesagkesto
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      initContainers:
+        - name: wait-for-watcher
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - until nc -z watcher {{ .Values.watcher.port }}; do echo "waiting for watcher..."; sleep 2; done
+      containers:
+        - name: mesagkesto
+          image: "{{ .Values.image.mesagkesto.repository }}:{{ .Values.image.mesagkesto.tag }}"
+          imagePullPolicy: {{ .Values.image.mesagkesto.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.mesagkesto.port }}
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /app/messagebox.yml
+              subPath: messagebox.yml
+      volumes:
+        - name: config
+          configMap:
+            name: mesagkesto-config

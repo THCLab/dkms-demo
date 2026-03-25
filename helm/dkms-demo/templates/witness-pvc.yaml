@@ -1,0 +1,17 @@
+{{- range .Values.witnesses }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .name }}-pvc
+  labels:
+    {{- include "dkms-demo.labels" $ | nindent 4 }}
+    app: {{ .name }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ $.Values.persistence.size }}
+  {{- include "dkms-demo.storageClass" $ | nindent 2 }}
+{{- end }}
