@@ -7,16 +7,16 @@ if [ -z "$MESAGKESTO_ADDRESS" ]; then
     exit 1
 fi
 echo -e "\n==== Generate Ewa key ====\n"
-$dkms identifier init -a ewa --witness-url http://172.17.0.1:3234 --watcher-url http://172.17.0.1:3235
+$dkms identifier init -a ewa --witness-url $WITNESS3_URL --watcher-url $WATCHER_URL
 
 echo -e "\n==== Generate Jan key ==== \n"
-$dkms identifier init -a jan --witness-url http://172.17.0.1:3232 --watcher-url http://172.17.0.1:3235
+$dkms identifier init -a jan --witness-url $WITNESS1_URL --watcher-url $WATCHER_URL
 
 INFO=$($dkms identifier info ewa)
 EWA_ID=$(echo $INFO | jq '.id' | tr -d '"')
 
 TMP_ACDC='{"v":"ACDC10JSON000114_","d":"","i":"'$EWA_ID'","ri":"","s":"schema","a":{"d":"ECk4Bn6rrC9G0mBJw0gy-DYv_glqBEuEwkVFWiwz-4sd","a":{"number":"123456789"}}}'
-ISSUED_ACDC=$($dkms data issue -a ewa -m "$TMP_ACDC")
+ISSUED_ACDC=$($dkms data issue -a ewa -m "$TMP_ACDC" --oca-bundle-said "EMJV9AqFYyVcmodxS_fmfu9cEExCE4x5ZZ8PvXJv-lxR")
 echo -e "\nACDC issued: $ISSUED_ACDC"
 
 echo -e "\n==== Passing issued ACDC from Alice to Bob via mesagkesto ====\n"

@@ -1,5 +1,5 @@
 x-witness: &witness
-  image: "ghcr.io/thclab/keriox-witness:0.17.9"
+  image: "harbor.colossi.network:4443/hcf/witness:latest"
   restart: always
   networks:
     - dkms-network
@@ -40,7 +40,7 @@ services:
 
   watcher:
     container_name: keriox-watcher
-    image: "ghcr.io/thclab/keriox-watcher:0.17.9"
+    image: "harbor.colossi.network:4443/hcf/watcher:latest"
     restart: always
     depends_on:
       - witness1
@@ -58,7 +58,7 @@ services:
 
   mesagkesto:
     container_name: mesagkesto
-    image: "ghcr.io/thclab/mesagkesto:latest"
+    image: "harbor.colossi.network:4443/hcf/mesagkesto:latest"
     restart: always
     depends_on:
       - watcher

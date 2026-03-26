@@ -1,10 +1,10 @@
 . test-vectors/dkms.sh
 
 echo "\n==== Generate Ewa key ====\n"
-$dkms identifier init -a ewa --witness-url http://172.17.0.1:3232 --watcher-url http://172.17.0.1:3235
+$dkms identifier init -a ewa --witness-url $WITNESS1_URL --watcher-url $WATCHER_URL
 
 echo "\n==== Generate Jan key ==== \n"
-$dkms identifier init -a jan --witness-url http://172.17.0.1:3232 --watcher-url http://172.17.0.1:3235
+$dkms identifier init -a jan --witness-url $WITNESS1_URL --watcher-url $WATCHER_URL
 
 INFO=$($dkms identifier info ewa)
 EWA_ID=$(echo $INFO | jq '.id' | tr -d '"')
@@ -21,7 +21,7 @@ echo "\n==== Jan initiate multisig group ==== \n"
 $dkms membership add -a jan -p $EWA_ID -g group0 -o $EWA_OOBI 
 
 echo "\n==== Jan finalize multisig group ==== \n"
-$dkms membership finalize -a jan --group-alias group0 --group-threshold 2 --witness-url http://172.17.0.1:3232 --witness-threshold 1
+$dkms membership finalize -a jan --group-alias group0 --group-threshold 2 --witness-url $WITNESS1_URL --witness-threshold 1
 
 # Ewa gets and confirms group event
 echo "\n==== Ewa pending ==== \n"

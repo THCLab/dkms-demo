@@ -5,9 +5,9 @@ if [ -z "$MESAGKESTO_ADDRESS" ]; then
     exit 1
 fi
 
-$dkms identifier init -a ewa --witness-url http://172.17.0.1:3233/ --watcher-url http://172.17.0.1:3235/
+$dkms identifier init -a ewa --witness-url $WITNESS2_URL/ --watcher-url $WATCHER_URL/
 
-$dkms identifier init -a jan --witness-url http://172.17.0.1:3232/ --watcher-url http://172.17.0.1:3235/
+$dkms identifier init -a jan --witness-url $WITNESS1_URL/ --watcher-url $WATCHER_URL/
 # TODO: do I need to do that?
 # $dkms identifier oobi resolve -a alice -f boboobi.json
 

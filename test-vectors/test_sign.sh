@@ -5,7 +5,7 @@
 echo "==== Generate Ewa key ===="
 echo
 # Generate identifier for Ewa
-$dkms identifier init -a ewa --witness-url http://172.17.0.1:3234 --watcher-url http://172.17.0.1:3235
+$dkms identifier init -a ewa --witness-url $WITNESS3_URL --watcher-url $WATCHER_URL
 
 # SIGN data payload using Ewa key
 SIGNED=$($dkms data sign -a ewa -m '{"hello":"world"}')
@@ -16,7 +16,7 @@ echo
 echo "==== Generate Jan key ===="
 echo
 # Generate identifier for Jan
-$dkms identifier init -a jan --witness-url http://172.17.0.1:3234 --watcher-url http://172.17.0.1:3235
+$dkms identifier init -a jan --witness-url $WITNESS3_URL --watcher-url $WATCHER_URL
 
 # Retrive Ewa OOBI for Jan to being able to retrive her Identifier KEL for verification
 EWA_OOBI=$($dkms identifier oobi get -a ewa)

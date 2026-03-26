@@ -5,12 +5,16 @@ if [ -z "$MESAGKESTO_ADDRESS" ]; then
     exit 1
 fi
 
-$dkms identifier init -a ewa --witness-url http://172.17.0.1:3233/ --watcher-url http://172.17.0.1:3235/
+$dkms identifier init -a ewa --witness-url $WITNESS2_URL/ --watcher-url $WATCHER_URL/
 
 echo -e "\n==== Ewa's config before rotation: ====\n"
 $dkms identifier info ewa
 
-$dkms log kel rotate -a ewa -c "./test-vectors/rotate_witness/rotation_config.yaml"
+# Generate rotation config from template, substituting the current WITNESS1_URL
+ROTATION_CONFIG=$(mktemp /tmp/rotation_config.XXXXXX.yaml)
+envsubst < "./test-vectors/rotate_witness/rotation_config.yaml.tmpl" > "$ROTATION_CONFIG"
+$dkms log kel rotate -a ewa -c "$ROTATION_CONFIG"
+rm -f "$ROTATION_CONFIG"
 
 echo -e "\n==== Ewa's config after rotation: ====\n"
 $dkms identifier info ewa
