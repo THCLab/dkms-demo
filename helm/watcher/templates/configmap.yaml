@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: watcher-config
+  labels:
+    {{- include "watcher.labels" . | nindent 4 }}
+data:
+  watcher.yml: |
+    db_path: "db/"
+    tel_storage_path: "db/tel_storage"
+    http_port: {{ .Values.port }}
+    public_url: "{{ if .Values.publicUrl }}{{ .Values.publicUrl }}{{ else }}http://{{ .Values.ingress.subdomain }}.{{ .Release.Namespace }}.{{ .Values.ingress.baseDomain }}{{ end }}"
+    seed: "${SEED}"
+    initial_oobis:
+    {{- range .Values.initialOobis }}
+      - eid: "{{ .eid }}"
+        scheme: "{{ .scheme }}"
+        url: "{{ .url }}"
+    {{- end }}
+    escrow_config:
+      default_timeout: 60

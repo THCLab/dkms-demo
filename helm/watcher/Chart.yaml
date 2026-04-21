@@ -1,0 +1,6 @@
+apiVersion: v2
+name: watcher
+description: KERI Watcher node – monitors and validates key events across witnesses
+type: application
+version: 0.1.0
+appVersion: "0.17.9"

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: witness
+description: KERI Witness node – single instance, deploy once per witness
+type: application
+version: 0.1.0
+appVersion: "0.17.9"
