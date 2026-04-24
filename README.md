@@ -46,81 +46,178 @@ Service ports (Docker Compose):
 
 ---
 
-## Option B – Kubernetes / Helm (minikube)
+## Option B – Kubernetes / Helm
+
+The Helm charts are split into three independent charts, one per service type. This allows deploying each instance separately — for example across different nodes or clusters.
+
+```
+helm/
+├── witness/       # single witness instance
+├── watcher/       # watcher instance
+└── mesagkesto/    # mesagkesto instance
+```
 
 ### Prerequisites
 
-- [minikube](https://minikube.sigs.k8s.io/docs/start/)
 - [kubectl](https://kubernetes.io/docs/tasks/tools/)
 - [Helm 3](https://helm.sh/docs/intro/install/)
 
-### Step 1: Start minikube
+---
+
+### Local testing (no ingress)
+
+#### Step 1: Create secrets
+
+Create the secrets manually before installing any chart:
 
 ```bash
-minikube start
+kubectl create secret generic witness1-secret --from-literal=seed=<seed>
+kubectl create secret generic witness2-secret --from-literal=seed=<seed>
+kubectl create secret generic witness3-secret --from-literal=seed=<seed>
+kubectl create secret generic watcher-secret  --from-literal=seed=<seed>
+kubectl create secret generic mesagkesto-secret \
+  --from-literal=seed=<seed> \
+  --from-literal=serverKey=<serverKey>
 ```
 
-### Step 2: Obtain the minikube IP
+#### Step 2: Install the charts
 
 ```bash
-minikube ip
-# e.g. 192.168.49.2
+# Witness 1
+helm install witness1 ./helm/witness \
+  --set name=witness1 \
+  --set ingress.enabled=false \
+  --set publicUrl=http://localhost:3232
+
+# Witness 2
+helm install witness2 ./helm/witness \
+  --set name=witness2 \
+  --set port=3233 \
+  --set ingress.enabled=false \
+  --set publicUrl=http://localhost:3233
+
+# Witness 3
+helm install witness3 ./helm/witness \
+  --set name=witness3 \
+  --set port=3234 \
+  --set ingress.enabled=false \
+  --set publicUrl=http://localhost:3234
+
+# Watcher
+helm install watcher ./helm/watcher \
+  --set ingress.enabled=false \
+  --set publicUrl=http://localhost:3235 \
+  --set "initialOobis[0].url=http://witness1:3232/" \
+  --set "initialOobis[1].url=http://witness2:3233/" \
+  --set "initialOobis[2].url=http://witness3:3234/"
+
+# Mesagkesto
+helm install mesagkesto ./helm/mesagkesto \
+  --set ingress.enabled=false \
+  --set publicUrl=http://localhost:3236 \
+  --set watcherOobi.url=http://watcher:3235
 ```
 
-This IP is used as the `externalHost` — the address that goes into each service's `public_url` so that external KERI clients can reach the witnesses, watcher, and mesagkesto.
-
-### Step 3: Install the Helm chart
-
-From the repository root:
+#### Step 3: Port-forward to access services locally
 
 ```bash
-helm install dkms-demo ./helm/dkms-demo --set externalHost=$(minikube ip)
+kubectl port-forward svc/witness1   3232:3232 &
+kubectl port-forward svc/witness2   3233:3233 &
+kubectl port-forward svc/witness3   3234:3234 &
+kubectl port-forward svc/watcher    3235:3235 &
+kubectl port-forward svc/mesagkesto 3236:3236 &
 ```
 
-Helm will print a `NOTES` summary with all service endpoints after the install completes.
-
-### Step 4: Verify the deployment
+#### Step 4: Verify
 
 ```bash
-# Watch pods come up (watcher and mesagkesto use initContainers to wait for dependencies)
-kubectl get pods -w
-
-# Check services and their NodePorts
-kubectl get svc
+curl http://localhost:3232/introduce   # witness1
+curl http://localhost:3233/introduce   # witness2
+curl http://localhost:3234/introduce   # witness3
+curl http://localhost:3235/introduce   # watcher
+curl http://localhost:3236/introduce   # mesagkesto
 ```
 
-Expected NodePorts:
+---
 
-| Service    | NodePort |
-|------------|----------|
-| witness1   | 30232    |
-| witness2   | 30233    |
-| witness3   | 30234    |
-| watcher    | 30235    |
-| mesagkesto | 30236    |
+### Production deployment (with ingress)
 
-### Step 5: Access the services
+Requires an ingress controller (nginx) and a wildcard DNS record pointing to your cluster:
 
-```bash
-MINIKUBE_IP=$(minikube ip)
-
-curl http://$MINIKUBE_IP:30232/introduce   # witness1
-curl http://$MINIKUBE_IP:30233/introduce   # witness2
-curl http://$MINIKUBE_IP:30234/introduce   # witness3
-curl http://$MINIKUBE_IP:30235/introduce   # watcher
-curl http://$MINIKUBE_IP:30236/introduce   # mesagkesto
+```
+*.nextgen.hiro-develop.nl  →  <ingress controller IP>
 ```
 
-### Upgrading / changing the external host
+#### Step 1: Create secrets (same as above)
+
+#### Step 2: Install the charts
 
 ```bash
-helm upgrade dkms-demo ./helm/dkms-demo --set externalHost=$(minikube ip)
+# Witness 1
+helm install witness1 ./helm/witness \
+  --namespace production \
+  --set name=witness1
+
+# Witness 2
+helm install witness2 ./helm/witness \
+  --namespace production \
+  --set name=witness2 \
+  --set port=3233
+
+# Witness 3
+helm install witness3 ./helm/witness \
+  --namespace production \
+  --set name=witness3 \
+  --set port=3234
+
+# Watcher — pass all three fields per witness to avoid Helm dropping eid and scheme
+# initialOobis URLs should use the ingress domains assigned to each witness
+helm install watcher ./helm/watcher \
+  --namespace production \
+  --set "initialOobis[0].eid=<witness1-eid>" \
+  --set "initialOobis[0].scheme=http" \
+  --set "initialOobis[0].url=http://<witness1-ingress-domain>/" \
+  --set "initialOobis[1].eid=<witness2-eid>" \
+  --set "initialOobis[1].scheme=http" \
+  --set "initialOobis[1].url=http://<witness2-ingress-domain>/" \
+  --set "initialOobis[2].eid=<witness3-eid>" \
+  --set "initialOobis[2].scheme=http" \
+  --set "initialOobis[2].url=http://<witness3-ingress-domain>/"
+
+# Mesagkesto — watcherOobi URL should use the ingress domain assigned to the watcher
+helm install mesagkesto ./helm/mesagkesto \
+  --namespace production \
+  --set watcherOobi.url=http://<watcher-ingress-domain>
+```
+
+Services will be reachable at:
+
+| Service    | URL |
+|------------|-----|
+| witness1   | `http://ds-witness.production.nextgen.hiro-develop.nl` |
+| witness2   | `http://ds-witness.production.nextgen.hiro-develop.nl` |
+| witness3   | `http://ds-witness.production.nextgen.hiro-develop.nl` |
+| watcher    | `http://ds-watcher.production.nextgen.hiro-develop.nl` |
+| mesagkesto | `http://ds-mesagkesto.production.nextgen.hiro-develop.nl` |
+
+> **Note:** All three witnesses share the same subdomain by default. Override `ingress.subdomain` per install to give each witness a unique subdomain.
+
+---
+
+### Upgrading
+
+```bash
+helm upgrade witness1 ./helm/witness --set name=witness1 ...
 ```
 
 ### Uninstalling
 
 ```bash
-helm uninstall dkms-demo
+helm uninstall witness1
+helm uninstall witness2
+helm uninstall witness3
+helm uninstall watcher
+helm uninstall mesagkesto
 ```
 
 > **Note:** PersistentVolumeClaims are not deleted automatically. To wipe all data:
@@ -128,27 +225,6 @@ helm uninstall dkms-demo
 > kubectl delete pvc witness1-pvc witness2-pvc witness3-pvc watcher-pvc
 > ```
 
-### Chart structure
-
-```
-helm/dkms-demo/
-├── Chart.yaml
-├── values.yaml          # all tuneable parameters
-└── templates/
-    ├── _helpers.tpl
-    ├── NOTES.txt
-    ├── witness-configmap.yaml    # one ConfigMap per witness (range)
-    ├── witness-deployment.yaml   # one Deployment per witness (range)
-    ├── witness-service.yaml      # NodePort Service per witness (range)
-    ├── witness-pvc.yaml          # PVC per witness (range)
-    ├── watcher-configmap.yaml
-    ├── watcher-deployment.yaml   # initContainer waits for all witnesses
-    ├── watcher-service.yaml
-    ├── watcher-pvc.yaml
-    ├── mesagkesto-configmap.yaml
-    ├── mesagkesto-deployment.yaml # initContainer waits for watcher
-    └── mesagkesto-service.yaml
-```
 ---
 
 ## Tests

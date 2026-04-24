@@ -1,0 +1,35 @@
+# Internal port mesagkesto listens on
+port: 3236
+
+# Override public_url for local testing (e.g. http://localhost:3236)
+# Leave empty to derive from ingress subdomain + namespace + baseDomain
+publicUrl: ""
+
+# Watcher OOBI — internal cluster DNS
+watcherOobi:
+  eid: "BF2t2NPc1bwptY1hYV0YCib1JjQ11k9jtuaZemecPF5b"
+  scheme: "http"
+  url: "http://watcher:3235"
+
+image:
+  repository: ghcr.io/thclab/mesagkesto
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+ingress:
+  enabled: true
+  subdomain: "ds-mesagkesto"
+  baseDomain: "nextgen.hiro-develop.nl"
+  tls: false
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+# Update this according to the desired node
+nodeSelector:
+  role: marketplace

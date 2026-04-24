@@ -1,0 +1,6 @@
+apiVersion: v2
+name: mesagkesto
+description: KERI Mesagkesto – message box for peer-to-peer ACDC credential exchange
+type: application
+version: 0.1.0
+appVersion: "latest"

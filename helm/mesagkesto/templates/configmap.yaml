@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mesagkesto-config
+  labels:
+    {{- include "mesagkesto.labels" . | nindent 4 }}
+data:
+  messagebox.yml: |
+    db_path: "./db/"
+    oobi_path: "./oobi/"
+    http_port: {{ .Values.port }}
+    public_url: "{{ if .Values.publicUrl }}{{ .Values.publicUrl }}{{ else }}http://{{ .Values.ingress.subdomain }}.{{ .Release.Namespace }}.{{ .Values.ingress.baseDomain }}{{ end }}"
+    seed: "${SEED}"
+    server_key: "${SERVER_KEY}"
+    watcher_oobi: '{"eid":"{{ .Values.watcherOobi.eid }}","scheme":"{{ .Values.watcherOobi.scheme }}","url":"{{ .Values.watcherOobi.url }}"}'

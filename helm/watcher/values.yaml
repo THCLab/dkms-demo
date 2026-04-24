@@ -1,0 +1,49 @@
+# KERI identifier for this watcher
+eid: "BF2t2NPc1bwptY1hYV0YCib1JjQ11k9jtuaZemecPF5b"
+
+# Internal port the watcher listens on
+port: 3235
+
+# Override public_url for local testing (e.g. http://localhost:3235)
+# Leave empty to derive from ingress subdomain + namespace + baseDomain
+publicUrl: ""
+
+# Witness OOBIs for bootstrap — one entry per witness
+# url should be the internal cluster DNS name (http://<witness-name>:<port>)
+initialOobis:
+  - eid: "BJq7UABlttINuWJh1Xl2lkqZG4NTdUdqnbFJDa6ZyxCC"
+    scheme: "http"
+    url: "http://witness1:3232/"
+  - eid: "BDg3H7Sr-eES0XWXiO8nvMxW6mD_1LxLeE1nuiZxhGp4"
+    scheme: "http"
+    url: "http://witness2:3233/"
+  - eid: "BDg1zxxf8u4Hx5IPraZzmStfSCZFZbDzMHjqVcFW5OfP"
+    scheme: "http"
+    url: "http://witness3:3234/"
+
+image:
+  repository: ghcr.io/thclab/keriox-watcher
+  tag: "0.17.9"
+  pullPolicy: IfNotPresent
+
+ingress:
+  enabled: true
+  subdomain: "ds-watcher"
+  baseDomain: "nextgen.hiro-develop.nl"
+  tls: false
+
+persistence:
+  storageClass: "standard"
+  size: 1Gi
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+# Update this according to the desired node
+nodeSelector:
+  role: marketplace

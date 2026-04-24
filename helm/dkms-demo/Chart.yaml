@@ -1,6 +1,0 @@
-apiVersion: v2
-name: dkms-demo
-description: DKMS infrastructure – 3 Witnesses, 1 Watcher, 1 Mesagkesto (Keriox / KERI protocol)
-type: application
-version: 0.1.0
-appVersion: "0.17.9"

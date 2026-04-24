@@ -1,0 +1,41 @@
+# Name for this witness instance (e.g. witness1, witness2, witness3)
+name: witness1
+
+# KERI identifier for this witness
+eid: "BJq7UABlttINuWJh1Xl2lkqZG4NTdUdqnbFJDa6ZyxCC"
+
+# Internal port the witness listens on
+port: 3232
+
+# Override public_url for local testing (e.g. http://localhost:3232)
+# Leave empty to derive from ingress subdomain + namespace + baseDomain
+publicUrl: ""
+
+image:
+  repository: ghcr.io/thclab/keriox-witness
+  tag: "0.17.9"
+  pullPolicy: IfNotPresent
+
+ingress:
+  enabled: true
+  subdomain: "ds-witness"
+  baseDomain: "nextgen.hiro-develop.nl"
+  tls: false
+
+persistence:
+  # "standard" for minikube; "" for cluster default
+  storageClass: "standard"
+  size: 1Gi
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+
+# Update this according to the desired node
+nodeSelector:
+  role: uva

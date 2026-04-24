@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: watcher
+  labels:
+    {{- include "watcher.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: watcher
+  template:
+    metadata:
+      labels:
+        app: watcher
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      initContainers:
+        - name: prepare-config
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - sed "s|\${SEED}|$SEED|g" /tpl/watcher.yml > /cfg/watcher.yml
+          env:
+            - name: SEED
+              valueFrom:
+                secretKeyRef:
+                  name: watcher-secret
+                  key: seed
+          volumeMounts:
+            - name: config-template
+              mountPath: /tpl
+            - name: config
+              mountPath: /cfg
+      containers:
+        - name: watcher
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.port }}
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /app/watcher.yml
+              subPath: watcher.yml
+            - name: db
+              mountPath: /app/db
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: config-template
+          configMap:
+            name: watcher-config
+        - name: config
+          emptyDir: {}
+        - name: db
+          persistentVolumeClaim:
+            claimName: watcher-pvc

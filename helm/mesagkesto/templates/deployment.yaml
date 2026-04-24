@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mesagkesto
+  labels:
+    {{- include "mesagkesto.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mesagkesto
+  template:
+    metadata:
+      labels:
+        app: mesagkesto
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      initContainers:
+        - name: prepare-config
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              sed "s|\${SEED}|$SEED|g" /tpl/messagebox.yml | \
+              sed "s|\${SERVER_KEY}|$SERVER_KEY|g" > /cfg/messagebox.yml
+          env:
+            - name: SEED
+              valueFrom:
+                secretKeyRef:
+                  name: mesagkesto-secret
+                  key: seed
+            - name: SERVER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mesagkesto-secret
+                  key: serverKey
+          volumeMounts:
+            - name: config-template
+              mountPath: /tpl
+            - name: config
+              mountPath: /cfg
+      containers:
+        - name: mesagkesto
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.port }}
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /app/messagebox.yml
+              subPath: messagebox.yml
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: config-template
+          configMap:
+            name: mesagkesto-config
+        - name: config
+          emptyDir: {}
